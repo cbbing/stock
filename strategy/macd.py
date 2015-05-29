@@ -191,7 +191,7 @@ def select_Time_MACD(stock_data, stockName):
         signal = SIGNAL_DEFAULT
         
         if dif_price[t] > dif_price[t-1] and dif_price[t] > dea_price[t] \
-                                        and dif_price[t-1] < dea_price[t-1] and dif_price[t] > 0:
+                                        and dif_price[t-1] < dea_price[t-1] and dea_price[t] > 0:
             if bBuySignal:
                 signal = SIGNAL_BUY
                 now_count = (int)(now_money / close_price[t] /100)*100
@@ -452,7 +452,8 @@ def select_Time_AMA(stock_data, stockName):
     
     start_money = 100000000
     now_count = 0
-    now_money = start_money
+    now_money = 0
+    one_hand = 10000
     
     # 将数据按照交易日期从远到近排序
     stock_data.sort('Date', inplace=True)
@@ -473,37 +474,42 @@ def select_Time_AMA(stock_data, stockName):
         
     signals = [0]*21
     tradeTimes = 0
-    bBuySignal = True 
+    
+    record_buy = 0
+    record_sale = []
         
     # 从20天以后开始判断买卖点
     for i in range(21, len(ama_price)):    
         
         signal = SIGNAL_DEFAULT
         
-        threshold = percentage * np.std(np.array(ama_price[i-20:i]) - np.array(ama_price[i-21:i-1])) # 过滤器
+        #print np.array(ama_price[i-19:i+1]) - np.array(ama_price[i-20:i])
+        threshold = percentage * np.std(np.array(ama_price[i-19:i+1]) - np.array(ama_price[i-20:i])) # 过滤器
         
         if ama_price[i] - np.min(ama_price[i-5:i]) > threshold: 
-            if bBuySignal:
-                now_count = (int)(start_money / close_price[i] /100)*100
-                now_money = start_money - now_count * close_price[i]
-                #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
-                bBuySignal = False  
+            signal = SIGNAL_BUY
+            now_count += one_hand
+            record_buy += one_hand * close_price[i]
+            #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
         elif np.max(ama_price[i-5:i]) - ama_price[i] > threshold:    
-            if bBuySignal == False:
-                signal = SIGNAL_SALE
-                now_money += now_count * close_price[i]
-                now_count = 0
-                #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
-                bBuySignal = True   
+            signal = SIGNAL_SALE
+            if now_count > one_hand:
+                now_count -= one_hand
+                record_sale = one_hand * close_price[i]
+            #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
         signals.append(signal)
         if signal != 0:
             #print 't:', t, '  signal:', signal
             tradeTimes += 1           
 
+    # 成本
+    print u'盈利', record_sale + now_count * close_price[-1] - record_buy
     
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+#     print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+#         u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
     stock_data['SIGNAL_AMA'] = signals
+    
+    return ama_price
 
 # 获取平方平滑系数
 def getConstaint(prices):

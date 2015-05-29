@@ -29,21 +29,29 @@ def strategy_macd():
                 stock_code, exp = os.path.splitext(basename)
                 #macd.run(stockCsvPath, stock_code)
                 
-                plt.figure()
+                each_stock_strategy(stockCsvPath, stock_code)
+                #break
+
+def each_stock_strategy(stockCsvPath, stock_code):
+    plt.figure()
                 
-                r = data_center.getCsvDataByFullPath(stockCsvPath)
-                dif_price, dea_price, macd_price = macd.getMAStrategy(stockCsvPath, stock_code, 'MACD')
-                #plot.plotClosePrice(plt, str(stock_code), stock_code, root)    
-                #plot.plotData(stockCsvPath + '\\' +name, name)
-                plt.plot(range(len(r.adj_close)), r.adj_close, 'black')
-                plt.plot(range(len(dif_price)), dif_price, 'red')
-                plt.plot(range(len(dea_price)), dea_price, 'blue')
-                plt.plot(range(len(macd_price)), macd_price, 'cyan')
-                plt.title(stock_code)
-                plt.grid()
-                plt.show()
-                break
+    r = data_center.getCsvDataByFullPath(stockCsvPath)
+    dif_price, dea_price, macd_price = macd.getMAStrategy(stockCsvPath, stock_code, 'MACD')
+    ama_price = macd.getMAStrategy(stockCsvPath, stock_code, 'AMA')
+    
+    #plot.plotClosePrice(plt, str(stock_code), stock_code, root)    
+    #plot.plotData(stockCsvPath + '\\' +name, name)
+    plt.plot(range(len(r.adj_close)), r.adj_close, 'black', label="Close")
+    plt.plot(range(len(dif_price)), dif_price, 'red', label='DIF')
+    plt.plot(range(len(dea_price)), dea_price, 'blue', label='DEA')
+    plt.plot(range(len(macd_price)), macd_price, 'cyan', label='MACD')
+    plt.plot(range(len(ama_price)), ama_price, 'green', label='AMA')
+    plt.title(stock_code)
+    plt.legend()
+    plt.grid()
+    plt.show()
  
     
 if __name__ == "__main__":
     strategy_macd()    
+    #each_stock_strategy("..\\stockdata\\600000.csv", '399001')
