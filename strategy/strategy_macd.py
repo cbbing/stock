@@ -6,8 +6,7 @@ import macd
 import os
 import matplotlib.pyplot as plt
 
-sys.path.append("..\\data_process\\")
-import data_center
+import data_process.native_data as native_data
 
 def strategy_macd():
     #读取历史数据
@@ -35,7 +34,7 @@ def strategy_macd():
 def each_stock_strategy(stockCsvPath, stock_code):
     plt.figure()
                 
-    r = data_center.getCsvDataByFullPath(stockCsvPath)
+    r = native_data.getCsvDataByFullPath(stockCsvPath)
     dif_price, dea_price, macd_price = macd.getMAStrategy(stockCsvPath, stock_code, 'MACD')
     ama_price = macd.getMAStrategy(stockCsvPath, stock_code, 'AMA')
     

@@ -23,7 +23,7 @@ import re
 def downloadAllHistoryAShareData():
     # os.path.pardir: 上级目录
     downloadDir = os.path.pardir + '\stockdata' 
-    stockDownload = StockDownload(downloadDir)
+    stockDownload = StockDownload(downloadDir, date(2014,1,1), date.today())
     
 #     listSS = range(600000, 604000)
 #     listSZ = range(000000, 004060)
@@ -33,13 +33,7 @@ def downloadAllHistoryAShareData():
     
     print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     startTime = time.clock()
-    stockDownload.download_mutli(listAll)
-#     pool = Pool(processes=5)
-#     #pool.map(stockDownloadProxy, listAll)  
-#     for i in listAll:
-#         pool.apply_async(stockDownloadProxy(stockDownload, i))
-#     pool.close()
-#     pool.join()    
+    stockDownload.download_mutli(listAll, 'yahoo')
     
     endTime = time.clock()
     print '多线程执行时间:', (endTime-startTime)
@@ -52,14 +46,13 @@ def downloadAllHistoryAShareData():
 # 
 #     endTime = time.clock()   
 #     print '单线程执行时间:', (endTime-startTime)
- 
-def stockDownloadProxy(stockDownload, code):
-    #for i in listAll:
-    stockDownload.download(str(code))
+
      
     
 # 股票下载类，单只股票
 class StockDownload:
+    
+    # 构造
     def __init__(self, downloadDir, startDate=date(2014,1,1), endDate=date.today()):
         #self.stockCode = stockCode
         self.downloadDir = downloadDir
@@ -81,27 +74,32 @@ class StockDownload:
             
                 
     
-    def download_mutli(self, listSockeCode):
+    # 多线程下载
+    def download_mutli(self, listSockeCode, source='yahoo'):
         pool = ThreadPool(processes=5)
-        pool.map(self.download, listSockeCode)  
+        if source == 'yahoo':
+            pool.map(self.downloadFromYahoo, listSockeCode)
+        elif source == '163':
+            pool.map(self.downloadFrom163, listSockeCode)      
         pool.close()
         pool.join()  
-        
-    def download(self, stockCode):
+    
+    # 从雅虎API下载    
+    def downloadFromYahoo(self, stockCode):
         stockCode = str(stockCode).zfill(6)  #不足6位，前面补零
         
-        if stockCode in self.ignoreList:
-            print 'ignore:', stockCode
-            return;
+#         if stockCode in self.ignoreList:
+#             print 'ignore:', stockCode
+#             return;
         
         if os.path.exists(self.downloadDir) == False:
             os.makedirs(self.downloadDir)
         stock_file = self.downloadDir + '/' + stockCode + '.csv'
         #print stockCode
         
-        if os.path.exists(stock_file):
-            print (">>exist:" + stockCode)
-            return
+#         if os.path.exists(stock_file):
+#             print (">>exist:" + stockCode)
+#             return
         
         print (">>download begin:" + stockCode)
         
@@ -127,7 +125,43 @@ class StockDownload:
         self.down_file(url, stock_file)
 
         print (">>download finish："  + stockCode)
-      
+    
+    # 从网易API下载    
+    def downloadFrom163(self, stockCode):
+        stockCode = str(stockCode).zfill(6)  #不足6位，前面补零
+        
+        stockCode163 = stockCode
+        if int(stockCode) // 100000 == 0:
+            stockCode163 = '1'+stockCode
+        else:
+            stockCode163 = '0'+stockCode    
+        
+#         if stockCode in self.ignoreList:
+#             print 'ignore:', stockCode
+#             return;
+        
+        if os.path.exists(self.downloadDir) == False:
+            os.makedirs(self.downloadDir)
+        stock_file = self.downloadDir + '/' + stockCode + '.csv'
+        #print stockCode
+        
+#         if os.path.exists(stock_file):
+#             print (">>exist:" + stockCode)
+#             return
+        
+        print (">>download begin:" + stockCode)
+        
+        strDateStart = self.startDate.strftime('%Y%m%d')
+        strDateEnd = self.endDate.strftime('%Y%m%d')
+    
+        urlFmt = 'http://quotes.money.163.com/service/chddata.html?code=%s&start=%s&end=%s'
+    
+        url =  urlFmt % (stockCode163,strDateStart, strDateEnd)
+    
+        self.down_file(url, stock_file)
+
+        print (">>download finish："  + stockCode)
+          
     # url:下载路径
     # file_name:保存到本地的文件名   
     # 找不到股票代码则放入忽略列表 
