@@ -19,9 +19,9 @@ def getCsvDataBySplitPath(stock_code, dataPath):
 def getCsvDataByFullPath(csvName):
     fh = open(csvName, 'r')
     
-    typeEncode = sys.getfilesystemencoding()##系统默认编码
-    infoencode = chardet.detect(fh).get('encoding','utf-8') #通过第3方模块来自动提取网页的编码
-    fh = fh.decode(infoencode, 'ignore').encode(typeEncode)##先转换成unicode编码，然后转换系统编码输出  ---------->方式一
+#     typeEncode = sys.getfilesystemencoding()##系统默认编码
+#     infoencode = chardet.detect(fh).get('encoding','utf-8') #通过第3方模块来自动提取网页的编码
+#     fh = fh.decode(infoencode, 'ignore').encode(typeEncode)##先转换成unicode编码，然后转换系统编码输出  ---------->方式一
     
     r = mlab.csv2rec(fh); 
     fh.close()

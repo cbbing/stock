@@ -1,4 +1,8 @@
+#!/usr/local/bin/python
 #coding=utf-8
+
+#回测均线策略
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -91,7 +95,7 @@ def self_adaptive_ma(stock_data):
     return status   
      
 
-# MA指标择时
+# MA指标择时  (回测）
 def select_Time_MA(stock_data, stockName):
     
     start_money = 100000000
@@ -160,7 +164,7 @@ def select_Time_MA(stock_data, stockName):
     # 将数据按照交易日期从近到远排序
     #stock_data.sort('date', ascending=False, inplace=True)
     
-# MACD指标择时
+# MACD指标择时 (回测）
 def select_Time_MACD(stock_data, stockName):
     
     start_money = 100000000
@@ -238,7 +242,7 @@ def select_Time_MACD(stock_data, stockName):
  
     return dif_price, dea_price, macd_price
 
-# DMA指标择时
+# DMA指标择时 (回测）
 def select_Time_DMA(stock_data, stockName):
     
     start_money = 100000000
@@ -313,7 +317,7 @@ def select_Time_DMA(stock_data, stockName):
     # 将数据按照交易日期从近到远排序
     #stock_data.sort('date', ascending=False, inplace=True)
  
-# DMA指标择时
+# DMA指标择时 (回测）
 def select_Time_TRIX(stock_data, stockName):
     
     start_money = 100000000
@@ -376,7 +380,7 @@ def select_Time_TRIX(stock_data, stockName):
     stock_data['SIGNAL_TRIX'] = signals
 
 
-# 组合择时指标
+# 组合择时指标 (回测）
 def select_Time_Mix(stock_data, stockName):
     
     start_money = 100000000

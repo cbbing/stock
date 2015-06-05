@@ -17,7 +17,7 @@ def getLiveMutliChinaStockPrice(stockCodeList):
     dataUrl = "http://hq.sinajs.cn/list=%s"  % (strStockCode)
     stdout = urllib2.urlopen(dataUrl)
     stdoutInfo = stdout.read().decode('gb2312').encode('utf-8')
-    stdoutInfoList = stdoutInfo.split('\n')
+    stdoutInfoList = stdoutInfo.splitlines()
     
     stockClassList = []
     for eachLine in stdoutInfoList:
@@ -27,7 +27,8 @@ def getLiveMutliChinaStockPrice(stockCodeList):
         # group(2)：取第二组数据
         tempData = re.search('''(")(.+)(")''', eachLine).group(2)
         stockInfo = tempData.split(",")
-        stockClassList.append(Stock(stockInfo))
+        stock = Stock.Stock(stockInfo)
+        stockClassList.append(stock)
     return stockClassList
 
 #获取实时股价

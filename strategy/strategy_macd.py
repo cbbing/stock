@@ -2,7 +2,7 @@
 #coding=utf-8
 
 import sys
-import macd
+from strategy import macd_back_test
 import os
 import matplotlib.pyplot as plt
 
@@ -26,7 +26,7 @@ def strategy_macd():
             if ".csv" in stockCsvPath:
                 basename = os.path.basename(stockCsvPath)
                 stock_code, exp = os.path.splitext(basename)
-                #macd.run(stockCsvPath, stock_code)
+                #macd_back_test.run(stockCsvPath, stock_code)
                 
                 each_stock_strategy(stockCsvPath, stock_code)
                 #break
@@ -35,21 +35,30 @@ def each_stock_strategy(stockCsvPath, stock_code):
     plt.figure()
                 
     r = native_data.getCsvDataByFullPath(stockCsvPath)
-    dif_price, dea_price, macd_price = macd.getMAStrategy(stockCsvPath, stock_code, 'MACD')
-    ama_price = macd.getMAStrategy(stockCsvPath, stock_code, 'AMA')
+    dif_price, dea_price, macd_price = macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'MACD')
+    ama_price = macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'AMA')
+    macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'MA')
+    macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'DMA')
+    macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'MACD')
+    macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'TRIX')
     
     #plot.plotClosePrice(plt, str(stock_code), stock_code, root)    
     #plot.plotData(stockCsvPath + '\\' +name, name)
-    plt.plot(range(len(r.adj_close)), r.adj_close, 'black', label="Close")
-    plt.plot(range(len(dif_price)), dif_price, 'red', label='DIF')
-    plt.plot(range(len(dea_price)), dea_price, 'blue', label='DEA')
-    plt.plot(range(len(macd_price)), macd_price, 'cyan', label='MACD')
-    plt.plot(range(len(ama_price)), ama_price, 'green', label='AMA')
-    plt.title(stock_code)
-    plt.legend()
-    plt.grid()
-    plt.show()
- 
+#     plt.plot(range(len(r.adj_close)), r.adj_close, 'black', label="Close")
+#     plt.plot(range(len(dif_price)), dif_price, 'red', label='DIF')
+#     plt.plot(range(len(dea_price)), dea_price, 'blue', label='DEA')
+#     plt.plot(range(len(macd_price)), macd_price, 'cyan', label='MACD')
+#     plt.plot(range(len(ama_price)), ama_price, 'green', label='AMA')
+#     plt.title(stock_code)
+#     plt.legend()
+#     plt.grid()
+#     plt.show()
+
+# 实时策略
+def live_stock_strategy(stockCsvPath, stock_code):
+    r = native_data.getCsvDataByFullPath(stockCsvPath)
+    dif_price, dea_price, macd_price = macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'MACD')
+    ama_price = macd_back_test.getMAStrategy(stockCsvPath, stock_code, 'AMA')
     
 if __name__ == "__main__":
     strategy_macd()    
