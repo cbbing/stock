@@ -7,6 +7,8 @@ import os
 import pandas as pd
 import datetime
 from multiprocessing.dummy import Pool as ThreadPool
+from tushare.util import dateu as du
+from pandas.core.algorithms import mode
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql'
 DB_WAY = 'csv'
@@ -17,21 +19,22 @@ TABLE_STOCKS_BASIC = 'stock_basic_list'
 DownloadDir = os.path.pardir + '/stockdata/' # os.path.pardir: 上级目录
 
 
-
-# 获取股票基本信息
+###################################
+#-- 获取股票基本信息       --#
+############################
 # 通过DB_WAY 选择存入csv或mysql
-def get_stock_basic_list():
-    df = ts.get_stock_basics()
-    
+def download_stock_basic_info():
     
     try:
+        df = ts.get_stock_basics()
         #直接保存
         if DB_WAY == 'csv':
             print 'choose csv'
             df.to_csv(DownloadDir+TABLE_STOCKS_BASIC + '.csv');
             print 'download csv finish'
-        else:
             
+        elif DB_WAY == 'mysql':
+            print 'choose mysql'
             engineString = 'mysql://' + DB_USER + ':' + DB_PWD + '@127.0.0.1/' + DB_NAME + '?charset=utf8'
             print engineString
             engine = create_engine(engineString)
@@ -44,23 +47,30 @@ def get_stock_basic_list():
     except Exception as e:
         print str(e)        
 
-# 获取股票的K线
+# 下载股票的K线
 # code:股票代码
-
-def get_stock_kline(code, date_start='', date_end=datetime.date.today()):
+# 默认为前复权数据：open, high, close, low； 不复权数据为：open_no_fq等，后复权数据为：open_hfq
+# 默认为上市日期到今天的K线数据
+def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
     code = convertStockIntToStr(code)
-    print 'download ' + str(code) + ' k-line'
+    
     try:
         fileName = 'h_kline_' + str(code) + '.csv'
+        
+        writeMode = 'w'
+        csvHeader = True #default
         if os.path.exists(DownloadDir+fileName):
-            print (">>exist:" + code)
+            #print (">>exist:" + code)
             df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
             
             se = df.head(1).index #取已有文件的最近日期
-            date_start = se[0].strftime("%Y-%m-%d")
+            dateNew = se[0] + datetime.timedelta(1)
+            date_start = dateNew.strftime("%Y-%m-%d")
             #print date_start
-            return
+            writeMode = 'a'
+            csvHeader = False
         
+        print 'download ' + str(code) + ' k-line'
         if date_start == '':
             se = get_stock_info(code)
             date_start = se['timeToMarket'] 
@@ -79,21 +89,72 @@ def get_stock_kline(code, date_start='', date_end=datetime.date.today()):
         df_qfq['close_hfq']=df_hfq['close']
         df_qfq['low_hfq']=df_hfq['low']
         
-        df_qfq.to_csv(DownloadDir+fileName);
-        print '\ndownload ' + str(code) +  ' k-line finish'
+        if writeMode == 'w':
+            df_qfq.to_csv(DownloadDir+fileName)
+        else:
             
+            df_old = pd.DataFrame.from_csv(DownloadDir + fileName)
+            
+            # 按日期由远及近
+            df_old = df_old.reindex(df_old.index[::-1])
+            df_qfq = df_qfq.reindex(df_qfq.index[::-1])
+            
+            df_new = df_old.append(df_qfq)
+            print df_new
+            
+            # 按日期由近及远
+            df_new = df_new.reindex(df_new.index[::-1])
+           
+            df_new.to_csv(DownloadDir+fileName)
+        print '\ndownload ' + str(code) +  ' k-line finish'
+        
         return df_qfq
         
     except Exception as e:
         print str(e)        
         
-    print 'download finish'
+
+# 下载股票的历史分笔数据
+# code:股票代码
+# 默认为最近3年的分笔数据
+def download_stock_quotes(code, date_start='', date_end=str(datetime.date.today())):
+    code = convertStockIntToStr(code)
+    try:
+        if date_start == '':
+            date = datetime.datetime.today().date() + datetime.timedelta(-365*3) 
+            date_start = str(date)
+          
+        dateStart = datetime.datetime.strptime(str(date_start), "%Y-%m-%d")   
+                
+        for i in range(du.diff_day(date_start, date_end)):
+            date = dateStart + datetime.timedelta(i)
+            strDate = date.strftime("%Y-%m-%d")
+            df = ts.get_tick_data(code, strDate)
+            print df
+    except Exception as e:
+        print str(e)        
 
 #######################
 ##  private methods  ##
 #######################
 
-# 获取个股的基本信息：股票名称，行业，地域，PE等
+# 获取个股的基本信息：股票名称，行业，地域，PE等，详细如下
+#     code,代码
+#     name,名称
+#     industry,所属行业
+#     area,地区
+#     pe,市盈率
+#     outstanding,流通股本
+#     totals,总股本(万)
+#     totalAssets,总资产(万)
+#     liquidAssets,流动资产
+#     fixedAssets,固定资产
+#     reserved,公积金
+#     reservedPerShare,每股公积金
+#     eps,每股收益
+#     bvps,每股净资
+#     pb,市净率
+#     timeToMarket,上市日期
 # 返回值类型：Series
 def get_stock_info(code):
     if DB_WAY == 'csv':
@@ -107,42 +168,35 @@ def get_stock_info(code):
                 
 
 # 获取所有股票的历史K线
-def get_all_stock_history_k_line():
+def download_all_stock_history_k_line():
     print 'download all stock k-line'
     if DB_WAY == 'csv':
         try:
             df = pd.DataFrame.from_csv(DownloadDir + TABLE_STOCKS_BASIC + '.csv')
             #se = df.loc[int(code)]
             #se = df.ix[code]
-            pool = ThreadPool(processes=20)
-            pool.map(get_stock_kline, df.index)
+            pool = ThreadPool(processes=1)
+            pool.map(download_stock_kline, df.index)
             pool.close()
             pool.join()  
             
-#             for code in df.index:
-#                 
-#                 print get_stock_info(code)['name']
-#                 get_stock_kline(convertStockIntToStr(code))
-            #return se
         except Exception as e:
             print str(e)
 
-# 补全股票代码
+# 补全股票代码(6位股票代码)
 # input: int or string
 # output: string
 def convertStockIntToStr(code):
     strZero = ''
     for i in range(len(str(code)), 6):
         strZero += '0'
-        
     return strZero + str(code)
     
 #get_stock_basic_list()
 #get_single_stock_info(600000)
-#get_stock_kline(600000)
-get_all_stock_history_k_line()
-
-
+#download_all_stock_history_k_line()
+#download_stock_quotes(600000)
+#download_stock_kline('002767')
 
 
 

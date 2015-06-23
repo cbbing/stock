@@ -4,6 +4,7 @@
 import urllib2
 import re
 import Stock
+import tushare as ts
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
@@ -59,3 +60,7 @@ def getLiveChinaStockPrice(stockCode):
         print(">>>>>> Exception: " + str(e))
     finally:
         None    
+
+
+#df = ts.get_realtime_quotes('002600')
+#print df[['code', 'name', 'price', 'bid', 'ask', 'volume', 'amount', 'time']]        

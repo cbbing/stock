@@ -1,4 +1,16 @@
 eclipse.preferences.version=1
 encoding//data_process/data_to_sql.py=utf-8
 encoding//data_process/download_stock.py=utf-8
+encoding//data_process/get_data_center.py=utf-8
+encoding//data_process/online_data.py=utf-8
+encoding//live_trade/live_trade.py=utf-8
+encoding//strategy/macd_back_test.py=utf-8
+encoding//strategy/macd_live_test.py=utf-8
+encoding//strategy/strategy_macd.py=utf-8
+encoding//strategy/tread_tracking.py=utf-8
+encoding//strategy/turtletrader.py=utf-8
+encoding//util/commons.py=utf-8
+encoding//util/stockutil.py=utf-8
+encoding/<project>=UTF-8
 encoding/livedata.py=utf-8
+encoding/plot.py=utf-8
