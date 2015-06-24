@@ -100,7 +100,7 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             df_qfq = df_qfq.reindex(df_qfq.index[::-1])
             
             df_new = df_old.append(df_qfq)
-            print df_new
+            #print df_new
             
             # 按日期由近及远
             df_new = df_new.reindex(df_new.index[::-1])
@@ -175,7 +175,7 @@ def download_all_stock_history_k_line():
             df = pd.DataFrame.from_csv(DownloadDir + TABLE_STOCKS_BASIC + '.csv')
             #se = df.loc[int(code)]
             #se = df.ix[code]
-            pool = ThreadPool(processes=1)
+            pool = ThreadPool(processes=10)
             pool.map(download_stock_kline, df.index)
             pool.close()
             pool.join()  
@@ -192,12 +192,11 @@ def convertStockIntToStr(code):
         strZero += '0'
     return strZero + str(code)
     
-#get_stock_basic_list()
-#get_single_stock_info(600000)
-#download_all_stock_history_k_line()
-#download_stock_quotes(600000)
-#download_stock_kline('002767')
-
-
+if __name__ == '__main__'  :  
+    #get_stock_basic_list()
+    #get_single_stock_info(600000)
+    download_all_stock_history_k_line()
+    #download_stock_quotes(600000)
+    #download_stock_kline('002767')
 
 

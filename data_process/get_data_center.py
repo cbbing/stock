@@ -17,11 +17,11 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
     code = getSixDigitalStockCode(code)
     fileName = 'h_kline_' + str(code) + '.csv'
     
-    df = None
+    #df = None
     # 如果存在则直接取
-    if os.path.exists(commons.DownloadDir+fileName):
-        df = pd.DataFrame.from_csv(path=commons.DownloadDir+fileName)
-    # 不存在则立即下载
-    else:
-        df = download_stock_kline(code, date_start, date_end)
+#     if os.path.exists(commons.DownloadDir+fileName):
+#         df = pd.DataFrame.from_csv(path=commons.DownloadDir+fileName)
+#     # 不存在则立即下载
+#     else:
+    df = download_stock_kline(code, date_start, date_end)
     return df         
