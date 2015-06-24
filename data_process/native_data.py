@@ -3,7 +3,7 @@
 import os
 import matplotlib.mlab as mlab
 import sys
-import chardet
+#import chardet
 
 # 获取csv文件序列
 def getCsvDataBySplitPath(stock_code, dataPath):

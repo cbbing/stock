@@ -76,7 +76,10 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             date_start = se['timeToMarket'] 
             date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
             date_start = date.strftime('%Y-%m-%d')
-        date_end = date_end.strftime('%Y-%m-%d')    
+        date_end = date_end.strftime('%Y-%m-%d')   
+        if date_start >= date_end:
+            df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
+            return df
         df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
         df_nfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 不复权
         df_hfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 后复权
@@ -112,7 +115,9 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
         
     except Exception as e:
         print str(e)        
+    
         
+    return pd.DataFrame
 
 # 下载股票的历史分笔数据
 # code:股票代码
