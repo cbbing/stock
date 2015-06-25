@@ -10,7 +10,7 @@ import ctypes
 
 # 监听股票列表
 stock_list = ['600000','600048', '600011', '002600', '002505', '000725', '000783', '300315', '002167', '601001']
-    
+#stock_list =['000725']
 
 def main():
     # 获取实时股价
@@ -29,18 +29,21 @@ def main():
             
             print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             
-            maStrategy = MACD_LIVE_TEST.MAStrategy(downloadDir + str(stock.code) +'.csv', stock)
-            signal = maStrategy.select_Time_Mix()()
+            fileName = 'h_kline_' + str(stock.code) + '.csv'
+            maStrategy = MACD_LIVE_TEST.MAStrategy(downloadDir + fileName, stock)
+            signal = maStrategy.select_Time_Mix()
             if signal > 0:
+                #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
                 print 'Buy now!', stock.name, stock.current, stock.time
-                Mbox('Buy now!' , '%s %s %s' % (stock.name, stock.current, stock.time), 1)
+                #Mbox('Buy now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
             elif signal < 0:     
+                #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
                 print 'Sale now!', stock.name, stock.current, stock.time
-                Mbox('Sale now!' , '%s %s %s' % (stock.name, stock.current, stock.time), 1)
+                #Mbox('Sale now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
             #else:
                 #print 'No Operatin!', stock.name, stock.time
         except Exception as e:
-            #print stock.name, str(e)
+            print stock.name, str(e)
             None
         finally:
             None

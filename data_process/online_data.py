@@ -21,6 +21,7 @@ def getLiveMutliChinaStockPrice(stockCodeList):
     stdoutInfoList = stdoutInfo.splitlines()
     
     stockClassList = []
+    index = 0
     for eachLine in stdoutInfoList:
         
         # 正则表达式说明
@@ -29,6 +30,8 @@ def getLiveMutliChinaStockPrice(stockCodeList):
         tempData = re.search('''(")(.+)(")''', eachLine).group(2)
         stockInfo = tempData.split(",")
         stock = Stock.Stock(stockInfo)
+        stock.code = stockCodeList[index]
+        index += 1
         stockClassList.append(stock)
     return stockClassList
 

@@ -70,7 +70,7 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             writeMode = 'a'
             csvHeader = False
         
-        print 'download ' + str(code) + ' k-line'
+        
         if date_start == '':
             se = get_stock_info(code)
             date_start = se['timeToMarket'] 
@@ -80,6 +80,7 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
         if date_start >= date_end:
             df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
             return df
+        print 'download ' + str(code) + ' k-line'
         df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
         df_nfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 不复权
         df_hfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 后复权
@@ -107,10 +108,10 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             
             # 按日期由近及远
             df_new = df_new.reindex(df_new.index[::-1])
-           
             df_new.to_csv(DownloadDir+fileName)
+            df_qfq = df_new
+            
         print '\ndownload ' + str(code) +  ' k-line finish'
-        
         return df_qfq
         
     except Exception as e:

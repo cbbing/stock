@@ -14,8 +14,8 @@ from data_to_sql import download_stock_kline
 # output:
 # -> DataFrame
 def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
-    code = getSixDigitalStockCode(code)
-    fileName = 'h_kline_' + str(code) + '.csv'
+    #code = getSixDigitalStockCode(code)
+    #fileName = 'h_kline_' + str(code) + '.csv'
     
     #df = None
     # 如果存在则直接取
