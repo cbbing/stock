@@ -76,7 +76,7 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             date_start = se['timeToMarket'] 
             date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
             date_start = date.strftime('%Y-%m-%d')
-        date_end = date_end.strftime('%Y-%m-%d')   
+        date_end = (date_end + datetime.timedelta(-1)).strftime('%Y-%m-%d')   
         if date_start >= date_end:
             df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
             return df
