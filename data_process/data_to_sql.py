@@ -58,7 +58,6 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
         fileName = 'h_kline_' + str(code) + '.csv'
         
         writeMode = 'w'
-        csvHeader = True #default
         if os.path.exists(DownloadDir+fileName):
             #print (">>exist:" + code)
             df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
@@ -68,8 +67,6 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             date_start = dateNew.strftime("%Y-%m-%d")
             #print date_start
             writeMode = 'a'
-            csvHeader = False
-        
         
         if date_start == '':
             se = get_stock_info(code)
@@ -77,10 +74,13 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
             date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')   
+        
+        # 已经是最新的数据
         if date_start >= date_end:
-            df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
+            df = pd.read_csv(path=DownloadDir+fileName)
             return df
-        print 'download ' + str(code) + ' k-line'
+        
+        print 'download ' + str(code) + ' k-line >>>begin', date_start, '-' + date_end
         df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
         df_nfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 不复权
         df_hfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 后复权
@@ -109,10 +109,10 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             # 按日期由近及远
             df_new = df_new.reindex(df_new.index[::-1])
             df_new.to_csv(DownloadDir+fileName)
-            df_qfq = df_new
+            #df_qfq = df_new
             
         print '\ndownload ' + str(code) +  ' k-line finish'
-        return df_qfq
+        return pd.read_csv(DownloadDir+fileName)
         
     except Exception as e:
         print str(e)        
@@ -181,7 +181,7 @@ def download_all_stock_history_k_line():
             df = pd.DataFrame.from_csv(DownloadDir + TABLE_STOCKS_BASIC + '.csv')
             #se = df.loc[int(code)]
             #se = df.ix[code]
-            pool = ThreadPool(processes=10)
+            pool = ThreadPool(processes=1)
             pool.map(download_stock_kline, df.index)
             pool.close()
             pool.join()  

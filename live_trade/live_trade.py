@@ -7,6 +7,7 @@ import strategy.macd_live_test as MACD_LIVE_TEST
 from time import sleep
 import time
 import ctypes
+import util.commons as cm
 
 # 监听股票列表
 stock_list = ['600000','600048', '600011', '002600', '002505', '000725', '000783', '300315', '002167', '601001']
@@ -20,27 +21,25 @@ def main():
         
         try:
             # 多线程提醒实时买卖
-            # os.path.pardir: 上级目录
-            downloadDir = os.path.pardir + '\\stockdata\\'
-            
             if float(stock.current) == 0.0:
                 print '>>>', stock.name,'>>>停牌!',  stock.close, stock.time
                 continue
             
-            print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
+            
             
             fileName = 'h_kline_' + str(stock.code) + '.csv'
-            maStrategy = MACD_LIVE_TEST.MAStrategy(downloadDir + fileName, stock)
+            maStrategy = MACD_LIVE_TEST.MAStrategy(cm.DownloadDir + fileName, stock)
             signal = maStrategy.select_Time_Mix()
             if signal > 0:
                 #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
-                print 'Buy now!', stock.name, stock.current, stock.time
+                print '>' * 5, 'Buy now!', stock.name, stock.current, stock.time
                 #Mbox('Buy now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
             elif signal < 0:     
                 #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
-                print 'Sale now!', stock.name, stock.current, stock.time
+                print '>' * 5, 'Sale now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%', stock.time
                 #Mbox('Sale now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
-            #else:
+            else:
+                print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
                 #print 'No Operatin!', stock.name, stock.time
         except Exception as e:
             print stock.name, str(e)
@@ -69,7 +68,7 @@ if __name__ == "__main__":
         
         print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         main()
-        print '\n\n'
+        print '\n'
         sleep(30) #2s
     
     print ">>live trade end"

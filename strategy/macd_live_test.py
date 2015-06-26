@@ -13,6 +13,20 @@ SIGNAL_DEFAULT = 0
     
 class MAStrategy:
     
+    # df: DataFrame
+    def __init__(self, df):
+        
+        self.stockHistorydata = df
+        #self.stockLiveData = stockData
+        
+        self.AVR_SHORT = 12
+        self.AVR_LONG = 40
+        
+        # 将数据按照交易日期从远到近排序
+        self.stockHistorydata.sort('date', inplace=True)
+        self.close_price = self.stockHistorydata['close'].get_values()
+        self.close_price = np.append(self.close_price, float(self.stockLiveData.current))
+        
     def __init__(self, stockCsvPath, stockData):
         
         get_stock_k_line(stockData.code)
