@@ -12,7 +12,7 @@ import matplotlib.font_manager as font_manager
 
 startdate = datetime.date(2014,1,1)
 today = enddate = datetime.date.today()
-ticker = '600000.SS'
+ticker = '000048.SZ'
 
 
 fh = finance.fetch_historical_yahoo(ticker, startdate, enddate)

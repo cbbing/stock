@@ -13,33 +13,27 @@ SIGNAL_DEFAULT = 0
     
 class MAStrategy:
     
-    # df: DataFrame
-    def __init__(self, df):
-        
-        self.stockHistorydata = df
-        #self.stockLiveData = stockData
+    # df: DataFrame    
+    def __init__(self, stockCsvPath = '', stockData='', df=''):
         
         self.AVR_SHORT = 12
         self.AVR_LONG = 40
-        
-        # 将数据按照交易日期从远到近排序
-        self.stockHistorydata.sort('date', inplace=True)
-        self.close_price = self.stockHistorydata['close'].get_values()
-        self.close_price = np.append(self.close_price, float(self.stockLiveData.current))
-        
-    def __init__(self, stockCsvPath, stockData):
-        
-        get_stock_k_line(stockData.code)
-        self.stockHistorydata = pd.read_csv(stockCsvPath)
-        self.stockLiveData = stockData
-        
-        self.AVR_SHORT = 12
-        self.AVR_LONG = 40
-        
-        # 将数据按照交易日期从远到近排序
-        self.stockHistorydata.sort('date', inplace=True)
-        self.close_price = self.stockHistorydata['close'].get_values()
-        self.close_price = np.append(self.close_price, float(self.stockLiveData.current))
+            
+        if len(stockCsvPath) > 0:
+            #方式一
+            get_stock_k_line(stockData.code)
+            stockHistorydata = pd.read_csv(stockCsvPath)
+            # 将数据按照交易日期从远到近排序
+            stockHistorydata.sort('date', inplace=True)
+            self.close_price = stockHistorydata['close'].get_values()
+            self.close_price = np.append(self.close_price, float(stockData.current))
+            
+        else:
+            #方式二
+            # 将数据按照交易日期从远到近排序
+            df.sort('date', inplace=True)
+            self.close_price = df['close'].get_values()
+                
 
     # 组合择时指标 (实时）
     def select_Time_Mix(self):
@@ -60,9 +54,9 @@ class MAStrategy:
                  (-abs(signalDMA)+signalDMA)/2 + (-abs(signalTRIX)+signalTRIX)/2 + (-abs(signalAMA)+signalAMA)/2
         
         signal = SIGNAL_DEFAULT
-        if buyTotal+saleTotal >= 2:
+        if buyTotal+saleTotal >= 3:
             signal = SIGNAL_BUY
-        elif buyTotal+saleTotal <= -2:
+        elif buyTotal+saleTotal <= -3:
             signal = SIGNAL_SALE
         
         return signal 
