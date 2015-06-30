@@ -32,7 +32,7 @@ class Stock:
     time = time.localtime(time.time()) #时间
     
     #构造函数
-    def __init__(self, sinaStockInfo):
+    def __init__(self, sinaStockInfo=''):
         
         if len(sinaStockInfo) >= 32:
             self.name = sinaStockInfo[0]

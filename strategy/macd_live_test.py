@@ -54,9 +54,9 @@ class MAStrategy:
                  (-abs(signalDMA)+signalDMA)/2 + (-abs(signalTRIX)+signalTRIX)/2 + (-abs(signalAMA)+signalAMA)/2
         
         signal = SIGNAL_DEFAULT
-        if buyTotal+saleTotal >= 3:
+        if buyTotal+saleTotal >= 2:
             signal = SIGNAL_BUY
-        elif buyTotal+saleTotal <= -3:
+        elif buyTotal+saleTotal <= -2:
             signal = SIGNAL_SALE
         
         return signal 

@@ -38,14 +38,14 @@ def evaluation_stock(code):
     
     try:
         #print 'evaluation', getSixDigitalStockCode(code), 'begin'
-        date_end = datetime.date.today() + datetime.timedelta(-3)
+        date_end = datetime.date.today() + datetime.timedelta(0)
         df = get_stock_k_line(code)
         if df is None:
             return
         else:
             nearest_date = df.head(1)['date']
-            print nearest_date
-            if str(nearest_date) != date_end:
+            #print nearest_date
+            if str(nearest_date.values[0]) != str(date_end):
                 return
         if len(df.index) > 30:
         
