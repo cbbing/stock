@@ -3,8 +3,9 @@
 
 import urllib2
 import re
-import Stock
+import Stock as st
 import tushare as ts
+import time
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
@@ -29,7 +30,7 @@ def getLiveMutliChinaStockPrice(stockCodeList):
         # group(2)：取第二组数据
         tempData = re.search('''(")(.+)(")''', eachLine).group(2)
         stockInfo = tempData.split(",")
-        stock = Stock.Stock(stockInfo)
+        stock = st.Stock(stockInfo)
         stock.code = stockCodeList[index]
         index += 1
         stockClassList.append(stock)
@@ -57,13 +58,34 @@ def getLiveChinaStockPrice(stockCode):
         #bb[24]:卖三股数 bb[25]:卖三报价   bb[26]:卖四股数      bb[27]:卖四报价  bb[28]:卖五股数     bb[29]:卖五报价
         #bb[30]:日期     bb[31]:时间     bb[8]:不知道
         
-        return Stock(stockInfo)
+        return st.Stock(stockInfo)
         
     except Exception as e:
         print(">>>>>> Exception: " + str(e))
     finally:
         None    
 
+def getAllChinaStock():
+    df = ts.get_today_all()
+    stockList = []
+    for se in df.get_values():
+        stock = st.Stock('')
+        stock.code = se[0]
+        stock.name = se[1]
+        stock.current = se[3]
+        stock.open = se[4]
+        stock.high = se[5]
+        stock.low = se[6]
+        stock.close = se[7]
+        stock.dealAmount = se[8]/100
+        stock.time = time.localtime(time.time()) #时间
+        #print stock
+        stockList.append(stock)
+    return stockList
+    
+if __name__ == "__main__":
+    getAllChinaStock()    
+    
 
 #df = ts.get_realtime_quotes('002600')
 #print df[['code', 'name', 'price', 'bid', 'ask', 'volume', 'amount', 'time']]        
