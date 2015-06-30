@@ -43,9 +43,9 @@ def evaluation_stock(code):
         if df is None:
             return
         else:
-            nearest_date = df.head(1)['date']
-            print nearest_date
-            if str(nearest_date) != date_end:
+            se_nearest_date = df.head(1)['date']
+            nearest_date = se_nearest_date.values[0]
+            if str(nearest_date) != str(date_end):
                 return
         if len(df.index) > 30:
         

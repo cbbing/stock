@@ -11,6 +11,7 @@ from tushare.util import dateu as du
 from pandas.core.algorithms import mode
 from util import stockutil as util
 import util.commons as cm
+import redis
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql'
 DB_WAY = 'csv'
@@ -195,17 +196,58 @@ def download_all_stock_history_k_line():
             print str(e)
     print 'download all stock k-line'
     
-# 补全股票代码(6位股票代码)
-# input: int or string
-# output: string
-# def convertStockIntToStr(code):
-#     strZero = ''
-#     for i in range(len(str(code)), 6):
-#         strZero += '0'
-#     return strZero + str(code)
+class DataBase:
+    def __init__(self):
+        self.host = 'localhost'
+        self.port = 6379
+        self.write_pool = {}  
+        
+    def write(self,website,city,year,month,day,deal_number):  
+        try:  
+            key = '_'.join([website,city,str(year),str(month),str(day)])  
+            val = deal_number  
+            r = redis.StrictRedis(host=self.host,port=self.port)  
+            r.set(key,val)  
+        except Exception, exception:  
+            print exception  
+
+    def read(self,website,city,year,month,day):  
+        try:  
+            key = '_'.join([website,city,str(year),str(month),str(day)])  
+            r = redis.StrictRedis(host=self.host,port=self.port)  
+            value = r.get(key)  
+            print value  
+            return value  
+        except Exception, exception:  
+            print exception    
     
-if __name__ == '__main__'  :  
-    download_stock_basic_info()
+    def add_write(self,website,city,year,month,day,deal_number):  
+        key = '_'.join([website,city,str(year),str(month),str(day)])  
+        val = deal_number  
+        self.write_pool[key] = val  
+
+    def batch_write(self):  
+        try:  
+            r = redis.StrictRedis(host=self.host,port=self.port)  
+            r.mset(self.write_pool)  
+        except Exception, exception:  
+            print exception
+
+def add_data():  
+    beg = datetime.datetime.now()  
+    db = DataBase()  
+    for i in range(1,10000):  
+        db.add_write('meituan','beijing',2013,i,1,i)  
+    db.batch_write()  
+    end = datetime.datetime.now()  
+    print end-beg             
+            
+if __name__ == '__main__'  :
+    add_data()    
+#     db = DataBase()  
+#     db.write('meituan','beijing',2013,9,1,8000)  
+#     db.read('meituan','beijing',2013,9,1)  
+    #download_stock_basic_info()
     #get_single_stock_info(600000)
     #download_all_stock_history_k_line()
     #download_stock_quotes(600000)
