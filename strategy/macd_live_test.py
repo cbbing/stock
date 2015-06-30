@@ -28,12 +28,23 @@ class MAStrategy:
             self.close_price = stockHistorydata['close'].get_values()
             self.close_price = np.append(self.close_price, float(stockData.current))
             
+#             try:
+#                 self.ema_12 = stockHistorydata['ema_12'].get_values()
+#                 self.ema_40 = stockHistorydata['ema_40'].get_values()
+#                 
+#             except Exception as e:
+#                 print '重新计算 ema'
+            self.ema_12 = pd.ewma(self.close_price, span=self.AVR_SHORT)
+            self.ema_40 = pd.ewma(self.close_price, span=self.AVR_LONG)  
+        
         else:
             #方式二
             # 将数据按照交易日期从远到近排序
             df.sort('date', inplace=True)
             self.close_price = df['close'].get_values()
-                
+        
+          
+            
 
     # 组合择时指标 (实时）
     def select_Time_Mix(self):
@@ -64,12 +75,15 @@ class MAStrategy:
     # MA指标择时  (回测）
     def select_Time_MA(self):
         
-        
-        
         #EMA 
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
-        ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
-        ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
+        if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
+            ema_close_short = self.ema_12
+            ema_close_long = self.ema_40
+        else:     
+            ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
+            ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
+        
         
         signal = SIGNAL_DEFAULT
         
@@ -89,8 +103,12 @@ class MAStrategy:
         #EMA 
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
         ma_dea = 10
-        ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
-        ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
+        if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
+            ema_close_short = self.ema_12
+            ema_close_long = self.ema_40
+        else:     
+            ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
+            ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
         
         
         dif_price = ema_close_short - ema_close_long
@@ -113,6 +131,7 @@ class MAStrategy:
         #MA 
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
         ma_dea = 10
+        
         ma_close_short = pd.rolling_mean(self.close_price, ma_list[0])
         ma_close_long = pd.rolling_mean(self.close_price, ma_list[1])
         
@@ -131,7 +150,7 @@ class MAStrategy:
         return signal            
         
      
-    # DMA指标择时 (回测）
+    # TRIX指标择时 (回测）
     def select_Time_TRIX(self):
         
         #EMA 
@@ -194,6 +213,8 @@ class MAStrategy:
     def getConstaint(self, prices):
         direction = abs(prices[-1] - prices[0])
         volatility = sum(abs(prices[i+1]-prices[i]) for i in range(len(prices)-1))
+        if volatility == 0.0:
+            return 0
         ER = abs(direction/volatility)   
         fastSC = 2.0/(2.0+1)
         slowSC = 2.0/(30.0+1)

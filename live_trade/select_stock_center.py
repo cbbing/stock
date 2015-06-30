@@ -38,7 +38,7 @@ def evaluation_stock(code):
     
     try:
         #print 'evaluation', getSixDigitalStockCode(code), 'begin'
-        date_end = datetime.date.today() + datetime.timedelta(0)
+        date_end = datetime.date.today() + datetime.timedelta(-1)
         df = get_stock_k_line(code)
         if df is None:
             return

@@ -5,6 +5,9 @@ import urllib2
 import re
 import Stock as st
 import tushare as ts
+import pandas as pd
+import util.commons as cm
+import util.stockutil as util
 import time
 
 #获取实时股价(同时获取多只股票)
@@ -65,6 +68,8 @@ def getLiveChinaStockPrice(stockCode):
     finally:
         None    
 
+# 获取A股所有股票的实时股价
+# 通过 ts.get_today_all 获取
 def getAllChinaStock():
     df = ts.get_today_all()
     stockList = []
@@ -81,6 +86,33 @@ def getAllChinaStock():
         stock.time = time.localtime(time.time()) #时间
         #print stock
         stockList.append(stock)
+    return stockList
+
+# 获取A股所有股票的实时股价
+# 通过get_realtime_quotes接口获取
+def getAllChinaStock2():
+    df_list = pd.read_csv(cm.DownloadDir + cm.TABLE_STOCKS_BASIC + '.csv')
+    stockList = df_list['code'].values;
+    stockList_group = util.group_list(stockList, 20)
+    print len(stockList_group)
+    print stockList_group[1]
+    stockList = []
+    for group in stockList_group:
+        df = ts.get_realtime_quotes(group)
+    
+        for se in df.get_values():
+            stock = st.Stock('')
+            stock.code = se[0]
+            stock.name = se[1]
+            stock.current = se[3]
+            stock.open = se[4]
+            stock.high = se[5]
+            stock.low = se[6]
+            stock.close = se[7]
+            stock.dealAmount = se[8]/100
+            stock.time = time.localtime(time.time()) #时间
+            #print stock
+            stockList.append(stock)
     return stockList
     
 if __name__ == "__main__":
