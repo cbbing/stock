@@ -74,7 +74,7 @@ def download_stock_kline(code, date_start='', date_end=datetime.date.today()):
             date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
             date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')  
-        
+        date_end = '2015-06-30'
         # 已经是最新的数据
         if date_start >= date_end:
             df = pd.read_csv(cm.DownloadDir+fileName)
