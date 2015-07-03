@@ -35,7 +35,8 @@ def live_mult_stock(stockClassList):
 #     pool.close()
 #     pool.join()    
     for stock in stockClassList:
-        live_single_stock(stock)   
+        live_single_stock(stock) 
+          
 
 def live_single_stock(stock):
     try:
@@ -46,7 +47,7 @@ def live_single_stock(stock):
         
         fileName = 'h_kline_' + str(stock.code) + '.csv'
         maStrategy = MACD_LIVE_TEST.MAStrategy(cm.DownloadDir + fileName, stock)
-        signal = maStrategy.select_Time_Mix(3)
+        signal = maStrategy.select_Time_Mix(2)
         if signal > 0:
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             print '>' * 5, 'Buy now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
@@ -57,8 +58,8 @@ def live_single_stock(stock):
             #print '>' * 5, 'Sale now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             stock_sale_list.append(getSixDigitalStockCode(stock.code))
             #Mbox('Sale now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
-        else:
-            print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
+        #else:
+            #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             #print 'No Operatin!', stock.name, stock.time
     except Exception as e:
         #print stock.name, str(e)

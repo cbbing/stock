@@ -22,7 +22,7 @@ def select_stock_from_all_stocks():
         #过滤停牌的股票
         code_list = code_all_list
         
-        pool = ThreadPool(processes=10)
+        pool = ThreadPool(processes=20)
         pool.map(evaluation_stock, code_list)
         pool.close()
         pool.join()  

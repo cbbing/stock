@@ -21,8 +21,10 @@ class MAStrategy:
             
         if len(stockCsvPath) > 0:
             #方式一
-            get_stock_k_line(stockData.code)
-            df_stockHistory = pd.read_csv(stockCsvPath)
+            df_stockHistory = get_stock_k_line(stockData.code)
+            if len(df_stockHistory) == 0:
+                return
+            #df_stockHistory = pd.read_csv(stockCsvPath)
             # 将数据按照交易日期从远到近排序
             df_stockHistory.sort('date', inplace=True)
             self.close_price = df_stockHistory['close'].get_values()
@@ -54,8 +56,7 @@ class MAStrategy:
                 # 将数据按照交易日期从近到远排序
                 df_stockHistory.sort('date', ascending = False, inplace=True)
                 df_stockHistory.to_csv(stockCsvPath)
-                print stockCsvPath
-                print df_stockHistory
+                print '保存至'+stockCsvPath
             
             self.close_price = np.append(self.close_price, float(stockData.current))
             
@@ -81,6 +82,12 @@ class MAStrategy:
             df.sort('date', inplace=True)
             self.close_price = df['close'].get_values()
         
+            self.ma_12 = pd.rolling_mean(self.close_price, self.AVR_SHORT)
+            self.ma_40 = pd.rolling_mean(self.close_price, self.AVR_LONG)
+          
+            self.ema_12 = pd.ewma(self.close_price, span=self.AVR_SHORT)
+            self.ema_40 = pd.ewma(self.close_price, span=self.AVR_LONG)  
+            
           
             
 

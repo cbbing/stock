@@ -9,6 +9,7 @@ import util.commons as cm
 from util.stockutil import getSixDigitalStockCode
 from data_to_sql import download_stock_kline
 import tushare as ts
+import redis
 
 
 # 获取个股K线数据
@@ -22,12 +23,34 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
     
     df = None
     #如果存在则直接取
-    if os.path.exists(cm.DownloadDir+fileName):
-        df = pd.read_csv(cm.DownloadDir+fileName)
-    # 不存在则立即下载
-    else:
-        df = download_stock_kline(code, date_start, date_end)
+    if cm.DB_WAY == 'csv':
+    
+        if os.path.exists(cm.DownloadDir+fileName):
+            df = pd.read_csv(cm.DownloadDir+fileName)
+        # 不存在则立即下载
+        #     else:
+        #         df = download_stock_kline(code, date_start, date_end)
+    elif cm.DB_WAY == 'redis':
+        r = redis.Redis(host='127.0.0.1', port=6379)
+        if len(date_start) == 0:
+            date_start = r.hget(cm.PRE_STOCK_BASIC+code, cm.KEY_TimeToMarket)
+        date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+        date_start = date_start.strftime("%Y-%m-%d") 
+        date_end = date_end.strftime("%Y-%m-%d")
+        
+        keys = r.lrange(cm.INDEX_STOCK_KLINE+code, 0, -1)
+        
+        listSeries = []
+        for key in keys:
+            if key > date_start and key < date_end:
+                dict = r.hgetall(cm.PRE_STOCK_KLINE+code +':'+ key)
+                _se = pd.Series(dict, index=[cm.KEY_DATE, cm.KEY_OPEN, cm.KEY_HIGH, cm.KEY_CLOSE, cm.KEY_LOW, cm.KEY_VOLUME,cm.KEY_AMOUNT]) 
+                listSeries.append(_se)
+        df = pd.DataFrame(listSeries)       
+
     return df     
+
+
 
 # 获取个股的基本信息：股票名称，行业，地域，PE等，详细如下
 #     code,代码
@@ -49,15 +72,25 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
 # 返回值类型：Series
 def get_stock_info(code):
     try:
-        df = pd.DataFrame.from_csv(cm.DownloadDir + cm.TABLE_STOCKS_BASIC + '.csv')
-        #se = df.loc[int(code)]
-        se = df.ix[int(code)]
-        return se
+        if cm.DB_WAY == 'csv':
+        
+            df = pd.DataFrame.from_csv(cm.DownloadDir + cm.TABLE_STOCKS_BASIC + '.csv')
+            #se = df.loc[int(code)]
+            se = df.ix[int(code)]
+            
+        
+        elif cm.DB_WAY == 'redis':
+            r = redis.Redis(host='127.0.0.1', port=6379)
+            se = pd.Series(r.hgetall(cm.PRE_STOCK_BASIC+code))
+            
     except Exception as e:
-        print str(e)    
-
+        print str(e)
+            
+    return se    
 # 获取终止上市股票列表        
 def get_stock_terminated():
     return ts.get_terminated()  
 
-            
+if __name__ == "__main__":
+    #get_stock_k_line('600000') 
+    get_stock_info('600003')           
