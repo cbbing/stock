@@ -46,7 +46,10 @@ def live_single_stock(stock):
             return
         
         fileName = 'h_kline_' + str(stock.code) + '.csv'
-        maStrategy = MACD_LIVE_TEST.MAStrategy(cm.DownloadDir + fileName, stock)
+        if cm.DB_WAY == 'csv':
+            maStrategy = MACD_LIVE_TEST.MAStrategy(cm.DownloadDir + fileName, stock)
+        elif cm.DB_WAY == 'redis':
+            maStrategy = MACD_LIVE_TEST.MAStrategy(stockData = stock, df=get_stock_k_line(stock.code))    
         signal = maStrategy.select_Time_Mix(2)
         if signal > 0:
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
