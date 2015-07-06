@@ -199,9 +199,9 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
         
         for idx, row in df_qfq.iterrows():
             strDate = str(idx)[0:10]
-            mapStock =  {cm.KEY_DATE:strDate,cm.KEY_OPEN:row['open'],cm.KEY_HIGH:row['high'],\
-                             cm.KEY_CLOSE:row['close'], cm.KEY_VOLUME:row['volume'],\
-                              cm.KEY_AMOUNT:row['amount']}
+            mapStock =  {cm.KEY_DATE:strDate,cm.KEY_OPEN:float(row['open']),cm.KEY_HIGH:float(row['high']),\
+                             cm.KEY_CLOSE:float(row['close']), cm.KEY_VOLUME:float(row['volume']),\
+                              cm.KEY_AMOUNT:float(row['amount'])}
             # 写入hash表
             r.hmset(cm.PRE_STOCK_KLINE+code + ':' + strDate, mapStock)
             
@@ -315,9 +315,9 @@ def download_all_stock_history_k_line():
 #     return strZero + str(code)
     
 if __name__ == '__main__'  :  
-    download_stock_basic_info()
+    #download_stock_basic_info()
     #get_single_stock_info(600000)
-    #download_all_stock_history_k_line()
+    download_all_stock_history_k_line()
     #download_stock_quotes(600000)
     #download_stock_kline_to_redis('000001')
     
