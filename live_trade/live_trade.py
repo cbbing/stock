@@ -65,7 +65,7 @@ def live_single_stock(stock):
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             #print 'No Operatin!', stock.name, stock.time
     except Exception as e:
-        #print stock.name, str(e)
+        print stock.name, str(e)
         None
     
 
@@ -93,16 +93,20 @@ def event_func():
     main()
     print '\n'
     
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    
     print '买入:'
     for code in stock_buy_list:
         stockInfo = get_stock_info(code)
         print 'Buy:', code, stockInfo['name']
+        r.lpush('buy_list', stockInfo['name'])
 
     print '\n卖出:'
     for code in stock_sale_list:
         if code in stock_list:
             stockInfo = get_stock_info(code)
             print 'Sale:', code, stockInfo['name']
+            r.lpush('sale_list', stockInfo['name'])
     
 #enter四个参数分别为：间隔事件、优先级（用于同时间到达的两个事件同时执行时定序）、被调用触发的函数，给他的参数（注意：一定要以tuple给如，如果只有一个参数就(xx,)）
 def perform(inc):

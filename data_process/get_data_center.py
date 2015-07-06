@@ -34,6 +34,8 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
         r = redis.Redis(host='127.0.0.1', port=6379)
         if len(date_start) == 0:
             date_start = r.hget(cm.PRE_STOCK_BASIC+code, cm.KEY_TimeToMarket)
+        if len(date_start) == 0:
+            date_start = '2015-01-01'    
         date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
         date_start = date_start.strftime("%Y-%m-%d") 
         date_end = date_end.strftime("%Y-%m-%d")

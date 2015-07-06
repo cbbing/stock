@@ -315,9 +315,9 @@ def download_all_stock_history_k_line():
 #     return strZero + str(code)
     
 if __name__ == '__main__'  :  
-    #download_stock_basic_info()
+    download_stock_basic_info()
     #get_single_stock_info(600000)
-    download_all_stock_history_k_line()
+    #download_all_stock_history_k_line()
     #download_stock_quotes(600000)
     #download_stock_kline_to_redis('000001')
     

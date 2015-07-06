@@ -244,10 +244,10 @@ class MAStrategy:
             constaint = self.getConstaint(sub_price)
             containts.append(constaint);
             
-        ama_price = [self.close_price[0]]    
+        ama_price = [float(self.close_price[0])]    
         for i in range(1, len(self.close_price)):
-            ama = containts[i-1] * self.close_price[i-1] + (1-containts[i-1])*ama_price[i-1]
-            ama_price.append(ama)
+            ama = containts[i-1] * float(self.close_price[i-1]) + (1-containts[i-1])*ama_price[i-1]
+            ama_price.append(float(ama))
          
         #print np.array(ama_price[i-19:i+1]) - np.array(ama_price[i-20:i])
         threshold = percentage * np.std(np.array(ama_price[i-19:i+1]) - np.array(ama_price[i-20:i])) # 过滤器
@@ -262,8 +262,8 @@ class MAStrategy:
     
     # 获取平方平滑系数
     def getConstaint(self, prices):
-        direction = abs(prices[-1] - prices[0])
-        volatility = sum(abs(prices[i+1]-prices[i]) for i in range(len(prices)-1))
+        direction = abs(float(prices[-1]) - float(prices[0]))
+        volatility = sum(abs(float(prices[i+1])-float(prices[i])) for i in range(len(prices)-1))
         if volatility == 0.0:
             return 0
         ER = abs(direction/volatility)   
