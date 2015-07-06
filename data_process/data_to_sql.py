@@ -12,6 +12,7 @@ from pandas.core.algorithms import mode
 from util import stockutil as util
 import util.commons as cm
 import redis
+from util.stockutil import fn_timer as fn_timer_
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql' or 'redis'
 # DB_WAY = 'redis'
@@ -57,7 +58,7 @@ def download_stock_basic_info():
             # 看连接
             print 'ping %s' %r.ping()
             
-            r.incr('basic_id', 1)
+            
             
             for idx, row in df.iterrows():
                 print idx, row
@@ -65,6 +66,9 @@ def download_stock_basic_info():
                              cm.KEY_TimeToMarket:row['timeToMarket']}
                 # 写入hash表
                 r.hmset(cm.PRE_STOCK_BASIC+idx, mapStock)
+                
+                #索引
+                r.rpush(cm.INDEX_STOCK_BASIC, idx)
                 #print r.hgetall(PRE_BASIC+idx)            
                 
     except Exception as e:
@@ -167,11 +171,16 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
 #             writeMode = 'a'
 #         
         if date_start == '':
-            se = get_stock_info(code)
-            date_start = se['timeToMarket']
-            date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
-            date_start = date.strftime('%Y-%m-%d')
-        date_start = '2015-07-02'
+            dates = r.lrange(cm.INDEX_STOCK_KLINE+code, 0, -1)
+            if len(dates) > 0:
+                nearstDate = dates[0]
+                date = datetime.datetime.strptime(str(nearstDate), "%Y-%m-%d") + datetime.timedelta(1)
+                date_start = date.strftime('%Y-%m-%d')
+            else:
+                se = get_stock_info(code) 
+                date_start = se['timeToMarket']
+                date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+                date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')  
         
         print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
@@ -197,12 +206,12 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
             r.hmset(cm.PRE_STOCK_KLINE+code + ':' + strDate, mapStock)
             
             #索引
-            r.lpush(cm.INDEX_STOCK_KLINE+code, strDate)
+            r.rpush(cm.INDEX_STOCK_KLINE+code, strDate)
              
         
        
         
-        print '\ndownload ' + str(code) +  ' k-line to csv finish'
+        print '\ndownload ' + str(code) +  ' k-line to redis finish'
             
         
     except Exception as e:
@@ -268,25 +277,33 @@ def get_stock_info(code):
             se = pd.Series(r.hgetall(cm.PRE_STOCK_BASIC+code))
             return se
         except Exception as e:
-            #print str(e)
+            print str(e)
             return None
         
 # 获取所有股票的历史K线
+@fn_timer_
 def download_all_stock_history_k_line():
-    print 'download all stock k-line'
-    if cm.DB_WAY == 'csv':
-        try:
+    print 'download all stock k-line start'
+    
+    try:
+        if cm.DB_WAY == 'csv':
             df = pd.DataFrame.from_csv(cm.DownloadDir + cm.TABLE_STOCKS_BASIC + '.csv')
             #se = df.loc[int(code)]
             #se = df.ix[code]
             pool = ThreadPool(processes=20)
             pool.map(download_stock_kline, df.index)
             pool.close()
-            pool.join()  
-            
-        except Exception as e:
-            print str(e)
-    print 'download all stock k-line'
+            pool.join()
+        elif cm.DB_WAY == 'redis':
+            codes = r.lrange(cm.INDEX_STOCK_BASIC, 0, -1)
+            pool = ThreadPool(processes=20)
+            pool.map(download_stock_kline_to_redis, codes)
+            pool.close()
+            pool.join()     
+        
+    except Exception as e:
+        print str(e)
+    print 'download all stock k-line finish'
     
 # 补全股票代码(6位股票代码)
 # input: int or string
@@ -300,11 +317,9 @@ def download_all_stock_history_k_line():
 if __name__ == '__main__'  :  
     #download_stock_basic_info()
     #get_single_stock_info(600000)
-    #download_all_stock_history_k_line()
+    download_all_stock_history_k_line()
     #download_stock_quotes(600000)
-    #download_stock_kline('002767')
-    download_stock_kline_to_redis('600000')
-    download_stock_kline_to_redis('600048')
-    download_stock_kline_to_redis('600011')
+    #download_stock_kline_to_redis('000001')
+    
 
 
