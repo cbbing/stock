@@ -12,32 +12,41 @@ import time
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
-    stockCodeListEx = []
-    for stockCode in stockCodeList:
-        if len(str(stockCode)) == 6:
-            exchange = "sh" if (int(stockCode) // 100000 == 6) else "sz"
-            stockCode = exchange + str(stockCode)
-        stockCodeListEx.append(stockCode)
-    strStockCode = ','.join(stockCodeListEx)
-    dataUrl = "http://hq.sinajs.cn/list=%s"  % (strStockCode)
-    stdout = urllib2.urlopen(dataUrl)
-    stdoutInfo = stdout.read().decode('gb2312').encode('utf-8')
-    stdoutInfoList = stdoutInfo.splitlines()
     
-    stockClassList = []
-    index = 0
-    for eachLine in stdoutInfoList:
+    
+    
+    try:
         
-        # 正则表达式说明
-        # 搜索 “ ”双引号内的字符串，包含换行符，将匹配的字符串分为三组：用（）表示
-        # group(2)：取第二组数据
-        tempData = re.search('''(")(.+)(")''', eachLine).group(2)
-        stockInfo = tempData.split(",")
-        stock = st.Stock(stockInfo)
-        stock.code = stockCodeList[index]
-        index += 1
-        stockClassList.append(stock)
-    return stockClassList
+        stockCodeListEx = []
+        for stockCode in stockCodeList:
+            if len(str(stockCode)) == 6:
+                exchange = "sh" if (int(stockCode) // 100000 == 6) else "sz"
+                stockCode = exchange + str(stockCode)
+            stockCodeListEx.append(stockCode)
+        strStockCode = ','.join(stockCodeListEx)
+        dataUrl = "http://hq.sinajs.cn/list=%s"  % (strStockCode)
+        stdout = urllib2.urlopen(dataUrl)
+        stdoutInfo = stdout.read().decode('gb2312').encode('utf-8')
+        stdoutInfoList = stdoutInfo.splitlines()
+        
+        stockClassList = []
+        
+        index = 0
+        for eachLine in stdoutInfoList:
+            
+            # 正则表达式说明
+            # 搜索 “ ”双引号内的字符串，包含换行符，将匹配的字符串分为三组：用（）表示
+            # group(2)：取第二组数据
+            tempData = re.search('''(")(.+)(")''', eachLine).group(2)
+            stockInfo = tempData.split(",")
+            stock = st.Stock(stockInfo)
+            stock.code = stockCodeList[index]
+            index += 1
+            stockClassList.append(stock)
+        return stockClassList
+    except Exception as e:
+        print str(e)
+        return []
 
 #获取实时股价
 def getLiveChinaStockPrice(stockCode):

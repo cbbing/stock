@@ -9,6 +9,7 @@ import ctypes
 from util.stockutil import fn_timer as fn_timer_
 from data_process.get_data_center import *
 from multiprocessing.dummy import Pool as ThreadPool
+import util.stockutil as util
 
 
 # 监听股票列表
@@ -22,11 +23,23 @@ stock_sale_list = []
 
 def main():
     # 获取实时股价
-    #stockClassList = OnlineData.getLiveMutliChinaStockPrice(stock_list)
-    stockClassList =OnlineData.getAllChinaStock()
-    #stockClassList =OnlineData.getAllChinaStock2()
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    stockList = list(r.smembers(cm.INDEX_STOCK_BASIC))
+    print len(stockList)
+    stockList_group = util.group_list(stockList, 20)
+    
+    stockClassList = []
+    for eachList in stockList_group:
+        #print eachList
+        stockClassList.extend(OnlineData.getLiveMutliChinaStockPrice(eachList))
+        print len(stockClassList)
+        
     print '获取股票总数：',len(stockClassList)
     live_mult_stock(stockClassList)
+    #stockClassList =OnlineData.getAllChinaStock()
+    #stockClassList =OnlineData.getAllChinaStock2()
+    #print '获取股票总数：',len(stockClassList)
+    #live_mult_stock(stockClassList)
     
            
 def live_mult_stock(stockClassList):  
@@ -42,7 +55,7 @@ def live_single_stock(stock):
     try:
         # 多线程提醒实时买卖
         if float(stock.current) == 0.0:
-            print '>>>', stock.name,'>>>停牌!',  stock.close, stock.time
+            #print '>>>', stock.name,'>>>停牌!',  stock.close, stock.time
             return
         
         fileName = 'h_kline_' + str(stock.code) + '.csv'
@@ -58,14 +71,14 @@ def live_single_stock(stock):
             #Mbox('Buy now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
         elif signal < 0:     
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
-            #print '>' * 5, 'Sale now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
+            print '>' * 5, 'Sale now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             stock_sale_list.append(getSixDigitalStockCode(stock.code))
             #Mbox('Sale now!' , '%s %s %s' % (stock.code, stock.current, stock.time), 1)
         #else:
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             #print 'No Operatin!', stock.name, stock.time
     except Exception as e:
-        print stock.name, str(e)
+        #print stock.name, str(e)
         None
     
 

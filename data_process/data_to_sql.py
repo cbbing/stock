@@ -68,7 +68,8 @@ def download_stock_basic_info():
                 r.hmset(cm.PRE_STOCK_BASIC+idx, mapStock)
                 
                 #索引
-                r.rpush(cm.INDEX_STOCK_BASIC, idx)
+                r.sadd(cm.INDEX_STOCK_BASIC, idx)
+                #r.rpush(cm.INDEX_STOCK_BASIC, idx)
                 #print r.hgetall(PRE_BASIC+idx)            
                 
     except Exception as e:
@@ -295,7 +296,8 @@ def download_all_stock_history_k_line():
             pool.close()
             pool.join()
         elif cm.DB_WAY == 'redis':
-            codes = r.lrange(cm.INDEX_STOCK_BASIC, 0, -1)
+            codes = r.smembers(cm.INDEX_STOCK_BASIC)
+            #codes = r.lrange(cm.INDEX_STOCK_BASIC, 0, -1)
             pool = ThreadPool(processes=20)
             pool.map(download_stock_kline_to_redis, codes)
             pool.close()
