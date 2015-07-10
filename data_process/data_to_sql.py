@@ -11,8 +11,9 @@ from tushare.util import dateu as du
 from pandas.core.algorithms import mode
 from util import stockutil as util
 import util.commons as cm
-import redis
+import redis, sqlite3
 from util.stockutil import fn_timer as fn_timer_
+
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql' or 'redis'
 # DB_WAY = 'redis'
@@ -21,6 +22,7 @@ from util.stockutil import fn_timer as fn_timer_
 # DB_NAME = 'test'
 
 r = redis.Redis(host='127.0.0.1', port=6379)
+engine = create_engine('sqlite:///..\stocks.db3')
 
 ###################################
 #-- 获取股票基本信息       --#
@@ -71,7 +73,39 @@ def download_stock_basic_info():
                 r.sadd(cm.INDEX_STOCK_BASIC, idx)
                 #r.rpush(cm.INDEX_STOCK_BASIC, idx)
                 #print r.hgetall(PRE_BASIC+idx)            
-                
+        
+        elif cm.DB_WAY == 'sqlite':
+            con = sqlite3.connect("..\stocks.db3")
+            con.text_factory = str
+            cur = con.cursor()
+            # 创建基本信息表
+            sql_create_basic = "create table if not exists %s ( %s TEXT PRIMARY KEY, %s TEXT, %s TEXT \
+                    , %s TEXT, %s REAL, %s REAL, %s REAL, %s TEXT)" \
+                    % (cm.INDEX_STOCK_BASIC, cm.KEY_CODE, cm.KEY_NAME, cm.KEY_INDUSTRY, cm.KEY_AREA, cm.KEY_PE, \
+                       cm.KEY_EPS, cm.KEY_PB, cm.KEY_TimeToMarket) 
+            cur.execute(sql_create_basic)            
+           
+            #清空表
+            cur.execute('delete from %s' % (cm.INDEX_STOCK_BASIC))
+            
+            #转换基本信息表
+            df = ts.get_stock_basics()
+            for idx, row in df.iterrows():
+                #print idx, row
+                code = util.getSixDigitalStockCode(idx)
+                sql_insert = "insert into %s (%s, %s, %s, %s, %s, %s, %s, %s) values(?,?,?,?,?,?,?,?)" % \
+                                                    (cm.INDEX_STOCK_BASIC,  \
+                                                    cm.KEY_CODE, cm.KEY_NAME, cm.KEY_INDUSTRY, cm.KEY_AREA, \
+                                                    cm.KEY_PE, cm.KEY_EPS, cm.KEY_PB, cm.KEY_TimeToMarket
+                                                    ) 
+                cur.execute(sql_insert,  
+                            (code, row['name'], row['industry'], row['area'], float(row['pe']), \
+                             float(row['esp']), float(row['pb']), row['timeToMarket']))
+              
+              
+            con.commit()
+            #关闭数据库
+            con.close()    
     except Exception as e:
         print str(e)        
 
@@ -158,19 +192,7 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
     code = util.getSixDigitalStockCode(code)
     
     try:
-        fileName = 'h_kline_' + str(code) + '.csv'
         
-#         writeMode = 'w'
-#         if os.path.exists(cm.DownloadDir+fileName):
-#             #print (">>exist:" + code)
-#             df = pd.DataFrame.from_csv(path=cm.DownloadDir+fileName)
-#             
-#             se = df.head(1).index #取已有文件的最近日期
-#             dateNew = se[0] + datetime.timedelta(1)
-#             date_start = dateNew.strftime("%Y-%m-%d")
-#             #print date_start
-#             writeMode = 'a'
-#         
         if date_start == '':
             dates = r.lrange(cm.INDEX_STOCK_KLINE+code, 0, -1)
             if len(dates) > 0:
@@ -192,7 +214,6 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
         
         print 'choose redis'
         
-       
         # 查数据库大小
         print '\ndbsize:%s' %r.dbsize()
         # 看连接
@@ -213,6 +234,45 @@ def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.to
        
         
         print '\ndownload ' + str(code) +  ' k-line to redis finish'
+            
+        
+    except Exception as e:
+        print str(e)        
+    
+        
+    return None
+
+def download_stock_kline_to_sqlite(code, date_start='', date_end=datetime.date.today()):
+    code = util.getSixDigitalStockCode(code)
+    
+    try:
+        
+        if date_start == '':
+            sql = 'select %s from %s order by %s desc' % (cm.KEY_DATE, cm.PRE_STOCK_KLINE_Sqlite+code, cm.KEY_DATE)
+            df = pd.read_sql_query(sql, engine)
+            dates = df[cm.KEY_DATE].get_values()
+            
+            if len(dates) > 0:
+                nearstDate = dates[0]
+                date = datetime.datetime.strptime(str(nearstDate), "%Y-%m-%d") + datetime.timedelta(1)
+                date_start = date.strftime('%Y-%m-%d')
+            else:
+                se = get_stock_info(code) 
+                date_start = se['timeToMarket']
+                date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+                date_start = date.strftime('%Y-%m-%d')
+        date_end = date_end.strftime('%Y-%m-%d')  
+        
+        print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
+        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        
+        if df_qfq is None:
+            return None
+        
+        print 'choose sqlite'
+        df_qfq.to_sql(cm.PRE_STOCK_KLINE_Sqlite+code, engine, if_exists='append')
+        
+        print '\ndownload ' + str(code) +  ' k-line to sqlite finish'
             
         
     except Exception as e:
@@ -264,23 +324,23 @@ def download_stock_quotes(code, date_start='', date_end=str(datetime.date.today(
 #     timeToMarket,上市日期
 # 返回值类型：Series
 def get_stock_info(code):
-    if cm.DB_WAY == 'csv':
-        try:
+    try:
+        if cm.DB_WAY == 'csv':
+        
             df = pd.DataFrame.from_csv(cm.DownloadDir + cm.TABLE_STOCKS_BASIC + '.csv')
             #se = df.loc[int(code)]
             se = df.ix[int(code)]
-            return se
-        except Exception as e:
-            #print str(e)
-            return None
-    elif cm.DB_WAY == 'redis':
-        try:
+            
+        elif cm.DB_WAY == 'redis':
             se = pd.Series(r.hgetall(cm.PRE_STOCK_BASIC+code))
-            return se
-        except Exception as e:
-            print str(e)
-            return None
         
+        elif cm.DB_WAY == 'sqlite': 
+            sql = "select * from %s where %s='%s'" % (cm.INDEX_STOCK_BASIC,cm.KEY_CODE, code)
+            df = pd.read_sql_query(sql, engine)
+            se = df.ix[0]
+    except Exception as e:
+        print str(e)
+    return se            
 # 获取所有股票的历史K线
 @fn_timer_
 def download_all_stock_history_k_line():
@@ -302,26 +362,75 @@ def download_all_stock_history_k_line():
             pool.map(download_stock_kline_to_redis, codes)
             pool.close()
             pool.join()     
-        
+        elif cm.DB_WAY == 'sqlite':
+            df = pd.read_sql_table(cm.INDEX_STOCK_BASIC, engine)
+            codes = df[cm.KEY_CODE].get_values() 
+            #codes = r.lrange(cm.INDEX_STOCK_BASIC, 0, -1)
+            pool = ThreadPool(processes=20)
+            pool.map(download_stock_kline_to_redis, codes)
+            pool.close()
+            pool.join()
     except Exception as e:
         print str(e)
     print 'download all stock k-line finish'
     
-# 补全股票代码(6位股票代码)
+# 计算均线ma
 # input: int or string
-# output: string
-# def convertStockIntToStr(code):
-#     strZero = ''
-#     for i in range(len(str(code)), 6):
-#         strZero += '0'
-#     return strZero + str(code)
+
+# redis 转 sqlite
+def convertRedisToSqlite():
+    
+    print 'convert begin'
+    con = sqlite3.connect("..\stocks.db3")
+    con.text_factory = str
+    cur = con.cursor()
+    
+    try:
+        
+        # 创建K线数据表
+        cur.execute("select %s from %s" % (cm.KEY_CODE, cm.INDEX_STOCK_BASIC))
+        stockList  =cur.fetchall()
+        for stockInfo in stockList:
+            code = stockInfo[0] # stockInfo为元组tuple
+            sql_create = "create table if not exists %s ( %s TEXT PRIMARY KEY, %s REAL, %s REAL, %s REAL, %s REAL, %s REAL, %s REAL)" \
+                        % (cm.PRE_STOCK_KLINE_Sqlite + code, cm.KEY_DATE, cm.KEY_OPEN, cm.KEY_HIGH, cm.KEY_CLOSE, cm.KEY_LOW, cm.KEY_VOLUME, cm.KEY_AMOUNT)            
+            cur.execute(sql_create)  
+            
+            keys = r.lrange(cm.INDEX_STOCK_KLINE+code, 0, -1)
+            print len(keys)
+            keys = list(set(keys)) #去掉重复
+            print len(keys)
+            for key in keys:
+                oneData = r.hgetall(cm.PRE_STOCK_KLINE+code +':'+ key)
+                oneData[cm.KEY_LOW] = 0.0
+                sql_insert = "insert into %s (%s, %s, %s, %s, %s, %s, %s) values(?,?,?,?,?,?,?)" % \
+                                (cm.PRE_STOCK_KLINE_Sqlite + code,  \
+                                cm.KEY_DATE, cm.KEY_OPEN, cm.KEY_HIGH, cm.KEY_CLOSE, cm.KEY_LOW, cm.KEY_VOLUME, cm.KEY_AMOUNT) 
+
+                cur.execute(sql_insert,  \
+                         (oneData[cm.KEY_DATE], float(oneData[cm.KEY_OPEN]), float(oneData[cm.KEY_HIGH]), float(oneData[cm.KEY_CLOSE]),\
+                          float(oneData[cm.KEY_LOW]), float(oneData[cm.KEY_VOLUME]), float(oneData[cm.KEY_AMOUNT])))
+            print code
+            con.commit()                                           
+    except Exception as e:
+        print str(e)         
+            
+#    sql_create = "create table if not exists %s ( %s VARCHAR(10) PRIMARY KEY, %s VARCHAR(20))" \
+#            % (cm.PRE_STOCK_KLINE + code, cm.KEY_DATE, cm.KEY_OPEN, cm.KEY_HIGH, cm.KEY_CLOSE, cm.KEY_LOW, cm.KEY_VOLUME, cm.KEY_AMOUNT)            
+    
+    #关闭数据库
+    con.close()
+    print 'convert end'
+    
     
 if __name__ == '__main__'  :  
     #download_stock_basic_info()
     #get_single_stock_info(600000)
     download_all_stock_history_k_line()
     #download_stock_quotes(600000)
-    #download_stock_kline_to_redis('000001')
+    #download_stock_kline_to_sqlite('000001')
+    
+    #convertRedisToSqlite()
     
 
 

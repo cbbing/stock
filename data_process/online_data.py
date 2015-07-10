@@ -42,10 +42,13 @@ def getLiveMutliChinaStockPrice(stockCodeList):
             stock = st.Stock(stockInfo)
             stock.code = stockCodeList[index]
             index += 1
-            stockClassList.append(stock)
+            if stock.current > 0.0:
+                stockClassList.append(stock)
+            else:
+                print stock.code , 'stop'    
         return stockClassList
     except Exception as e:
-        print str(e)
+        #print str(e)
         return []
 
 #获取实时股价
