@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 import tushare as ts
 import os
 import pandas as pd
+import pandas.io.data as web
 import datetime
 from multiprocessing.dummy import Pool as ThreadPool
 from tushare.util import dateu as du
@@ -253,7 +254,7 @@ def download_stock_kline_to_sqlite(code, date_start='', date_end=datetime.date.t
             dates = df[cm.KEY_DATE].get_values()
             
             if len(dates) > 0:
-                nearstDate = dates[0]
+                nearstDate = dates[0][:10]
                 date = datetime.datetime.strptime(str(nearstDate), "%Y-%m-%d") + datetime.timedelta(1)
                 date_start = date.strftime('%Y-%m-%d')
             else:
@@ -262,15 +263,19 @@ def download_stock_kline_to_sqlite(code, date_start='', date_end=datetime.date.t
                 date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
                 date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')  
-        
+
+#         if date_start == '2015-07-11':
+#             return;
+                
         print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
-        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        
+        df_qfq = download_kline_source_select(False, code, date_start, date_end)
         
         if df_qfq is None:
             return None
         
         print 'choose sqlite'
-        df_qfq.to_sql(cm.PRE_STOCK_KLINE_Sqlite+code, engine, if_exists='append')
+        df_qfq.to_sql(cm.PRE_STOCK_KLINE_Sqlite+code, engine, index=False, if_exists='append')
         
         print '\ndownload ' + str(code) +  ' k-line to sqlite finish'
             
@@ -281,6 +286,22 @@ def download_stock_kline_to_sqlite(code, date_start='', date_end=datetime.date.t
         
     return None
 
+# 下载源选择
+def download_kline_source_select(bAtHome, code, date_start, date_end):
+    try:
+        if bAtHome == True:
+            df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        else:
+            exchange = ".sh" if (int(code) // 100000 == 6) else ".sz"
+            df_qfq = web.get_data_yahoo(code + exchange, date_start, date_end, adjust_price=True)
+            
+            d = {cm.KEY_DATE: df_qfq.index.get_values(), cm.KEY_OPEN:df_qfq['Open'].get_values(), cm.KEY_HIGH:df_qfq['High'].get_values(), \
+                 cm.KEY_CLOSE:df_qfq['Close'].get_values(), cm.KEY_LOW:df_qfq['Low'].get_values(), cm.KEY_VOLUME:df_qfq['Volume'].get_values()}
+            df_qfq = pd.DataFrame(d)    
+        return df_qfq    
+    except Exception as e:
+        print str(e)
+        
 # 下载股票的历史分笔数据
 # code:股票代码
 # 默认为最近3年的分笔数据
@@ -366,8 +387,8 @@ def download_all_stock_history_k_line():
             df = pd.read_sql_table(cm.INDEX_STOCK_BASIC, engine)
             codes = df[cm.KEY_CODE].get_values() 
             #codes = r.lrange(cm.INDEX_STOCK_BASIC, 0, -1)
-            pool = ThreadPool(processes=20)
-            pool.map(download_stock_kline_to_redis, codes)
+            pool = ThreadPool(processes=2)
+            pool.map(download_stock_kline_to_sqlite, codes)
             pool.close()
             pool.join()
     except Exception as e:

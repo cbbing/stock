@@ -12,6 +12,14 @@ import tushare as ts
 import redis, sqlite3
 from sqlalchemy import create_engine
 
+# 获取所有股票代码
+def get_stock_codes():
+    if cm.DB_WAY == 'sqlite':
+        engine = create_engine('sqlite:///..\stocks.db3')
+        sql = 'select %s from %s' % (cm.KEY_CODE, cm.INDEX_STOCK_BASIC)
+        df = pd.read_sql_query(sql, engine)
+        codes = df[cm.KEY_CODE].get_values()
+        return codes
 
 
 # 获取个股K线数据
@@ -36,9 +44,8 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
         r = redis.Redis(host='127.0.0.1', port=6379)
         if len(date_start) == 0:
             date_start = r.hget(cm.PRE_STOCK_BASIC+code, cm.KEY_TimeToMarket)
-        #if len(date_start) == 0:
-        date_start = '20150101'    
-        date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+        #date_start = '20150101'    
+            date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
         date_start = date_start.strftime("%Y-%m-%d") 
         date_end = date_end.strftime("%Y-%m-%d")
         
@@ -57,9 +64,18 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
         #engine = create_engine('sqlite:///:memory:')
         engine = create_engine('sqlite:///..\stocks.db3')
         
+        if len(date_start) == 0:
+#             date_start = r.hget(cm.PRE_STOCK_BASIC+code, cm.KEY_TimeToMarket)
+#             date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+#             date_start = date_start.strftime("%Y-%m-%d") 
+            date_start = '2015-01-01'
+        date_end = date_end.strftime("%Y-%m-%d")
+        
         try:
                    
-            sql = 'select %s, %s from %s order by %s asc' % (cm.KEY_DATE, cm.KEY_CLOSE, cm.PRE_STOCK_KLINE_Sqlite+code, cm.KEY_DATE)
+            sql = "select %s, %s from %s where %s > '%s' and %s < '%s' order by %s asc" % \
+                (cm.KEY_DATE, cm.KEY_CLOSE, cm.PRE_STOCK_KLINE_Sqlite+code, cm.KEY_DATE, date_start, \
+                cm.KEY_DATE, date_end, cm.KEY_DATE)
             df = pd.read_sql_query(sql, engine)
             
         except Exception as e:
