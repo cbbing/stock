@@ -22,10 +22,8 @@ stock_list = ['600000','600048', '600011', '002600', '002505', '000725', '000783
 
 def main():
     
-    stockClassList = get_all_stock_current_price()    
-    print '获取股票总数：',len(stockClassList)
-    
-    #stockClassList =OnlineData.getAllChinaStock()
+    #stockClassList = get_all_stock_current_price()
+    stockClassList =OnlineData.getAllChinaStock()
     #stockClassList =OnlineData.getAllChinaStock2()
     #print '获取股票总数：',len(stockClassList)
     #live_mult_stock(stockClassList)
@@ -96,9 +94,9 @@ def live_single_stock(stock):
         fileName = 'h_kline_' + str(stock.code) + '.csv'
         if cm.DB_WAY == 'csv':
             maStrategy = MACD_LIVE_TEST.MAStrategy(cm.DownloadDir + fileName, stock)
-        elif cm.DB_WAY == 'redis' or cm.DB_WAY == 'sqlite':
+        elif cm.DB_WAY == 'redis' or cm.DB_WAY == 'sqlite' or cm.DB_WAY == 'mysql':
             maStrategy = MACD_LIVE_TEST.MAStrategy(stockData = stock, df=get_stock_k_line(stock.code))    
-        signal = maStrategy.select_Time_Mix(2)
+        signal = maStrategy.select_Time_Mix(2, 2)
         if signal > 0:
             #print stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             print '>' * 5, 'Buy now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'

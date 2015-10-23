@@ -5,11 +5,11 @@
 import os
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql' or 'redis' or 'sqlite'
-DB_WAY = 'sqlite'
+DB_WAY = 'mysql'
 DB_USER = 'root'
-DB_PWD = '1234' # or '123456' in win7
-DB_NAME = 'test'
-TABLE_STOCKS_BASIC = 'stock_basic_list'
+DB_PWD = 'root' # or '123456' in win7
+DB_NAME = 'stock'
+#TABLE_STOCKS_BASIC = 'stock_basic_list'
 DownloadDir = os.path.pardir + '/stockdata/' # os.path.pardir: 上级目录
 
 ##################################

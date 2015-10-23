@@ -92,7 +92,7 @@ class MAStrategy:
             
 
     # 组合择时指标 (实时）
-    def select_Time_Mix(self, condition = 2):
+    def select_Time_Mix(self, conditionBuy = 2, conditonSale = 2):
         
         # 综合策略
         signalMA = self.select_Time_MA()
@@ -110,9 +110,9 @@ class MAStrategy:
                  (-abs(signalDMA)+signalDMA)/2 + (-abs(signalTRIX)+signalTRIX)/2 + (-abs(signalAMA)+signalAMA)/2
         
         signal = SIGNAL_DEFAULT
-        if buyTotal+saleTotal >= condition:
+        if buyTotal+saleTotal >= conditionBuy:
             signal = SIGNAL_BUY
-        elif buyTotal+saleTotal <= -condition:
+        elif buyTotal+saleTotal <= -conditonSale:
             signal = SIGNAL_SALE
         
         return signal 

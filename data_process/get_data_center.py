@@ -7,7 +7,7 @@ import pandas as pd
 
 import util.commons as cm
 from util.stockutil import getSixDigitalStockCode
-from data_to_sql import download_stock_kline
+from data_download import download_stock_kline
 import tushare as ts
 import redis, sqlite3
 from sqlalchemy import create_engine
@@ -59,10 +59,11 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
                 _se = pd.Series(dict, index=[cm.KEY_DATE, cm.KEY_CLOSE]) 
                 listSeries.append(_se)
         df = pd.DataFrame(listSeries)       
-    elif cm.DB_WAY == 'sqlite':
-        
-        #engine = create_engine('sqlite:///:memory:')
-        engine = create_engine('sqlite:///..\stocks.db3')
+    elif cm.DB_WAY == 'sqlite' or cm.DB_WAY == 'mysql':
+        if cm.DB_WAY == 'sqlite':
+            engine = create_engine('sqlite:///..\stocks.db3')
+        elif cm.DB_WAY == 'mysql':
+            engine = create_engine('mysql+mysqldb://root:root@localhost/stock')
         
         if len(date_start) == 0:
 #             date_start = r.hget(cm.PRE_STOCK_BASIC+code, cm.KEY_TimeToMarket)
@@ -79,7 +80,8 @@ def get_stock_k_line(code, date_start='', date_end=datetime.date.today()):
             df = pd.read_sql_query(sql, engine)
             
         except Exception as e:
-            print str(e)    
+            print str(e)
+
     return df     
 
 
@@ -123,6 +125,7 @@ def get_stock_info(code):
             
     except Exception as e:
         print str(e)
+        se = pd.Series()
             
     return se    
 # 获取终止上市股票列表        
