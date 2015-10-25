@@ -5,7 +5,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from data_process.get_data_center import get_stock_k_line
+from data_process.data_get import get_stock_k_line
 from tushare.util import dateu as du
 import datetime
 import tushare as ts

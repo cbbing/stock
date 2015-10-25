@@ -1,15 +1,15 @@
 #!/usr/local/bin/python3
 #coding=utf-8
 
-import time,sched,os
-import data_process.online_data as OnlineData
-import strategy.macd_live_test as MACD_LIVE_TEST
-from time import sleep
+import sched
 import ctypes
+
+import data_process.online_data as OnlineData
+import trade_process.strategy.macd_live_test as MACD_LIVE_TEST
 from util.stockutil import fn_timer as fn_timer_
-from data_process.get_data_center import *
-from multiprocessing.dummy import Pool as ThreadPool
+from data_process.data_get import *
 import util.stockutil as util
+
 
 
 # 监听股票列表

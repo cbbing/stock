@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 #coding=utf-8
 
-from data_process.get_data_center import *
+from data_process.data_get import *
 import pandas.io.data as web
 import re, urllib, urllib2, cookielib
 

@@ -1,12 +1,13 @@
 #!/usr/local/bin/python
 #coding=utf-8
 
-import sys
-from strategy import macd_back_test
 import os
+
 import matplotlib.pyplot as plt
 
+from trade_process.strategy import macd_back_test
 import data_process.native_data as native_data
+
 
 def strategy_macd():
     #读取历史数据

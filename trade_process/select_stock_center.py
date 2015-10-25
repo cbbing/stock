@@ -2,13 +2,10 @@
 #coding=utf-8
 #量化选股中心
 
-import tushare as ts
-import datetime
-import pandas as pd
-import util.commons as cm
 from multiprocessing.dummy import Pool as ThreadPool
-from data_process.get_data_center import *
-import strategy.macd_live_test as MACD_LIVE_TEST
+
+from data_process.data_get import *
+import trade_process.strategy.macd_live_test as MACD_LIVE_TEST
 from util.stockutil import getSixDigitalStockCode
 
 stock_buy_list = []

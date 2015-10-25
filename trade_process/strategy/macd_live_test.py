@@ -5,7 +5,7 @@
 
 import pandas as pd
 import numpy as np
-from data_process.get_data_center import get_stock_k_line
+from data_process.data_get import get_stock_k_line
 
 SIGNAL_BUY = 1  #买 
 SIGNAL_SALE = -1 #卖
