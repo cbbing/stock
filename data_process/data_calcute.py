@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 from data_get import *
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 #计算均线
 def calcute_ma():
@@ -21,7 +24,7 @@ def _calcute_ma(code):
         close_prices = df['close'].get_values()
         print close_prices[-10:]
 
-        print '计算 ma'
+        print 'calcute ma'
         ma_short = pd.rolling_mean(close_prices, AVR_SHORT) #12
         ma_long = pd.rolling_mean(close_prices, AVR_LONG)   #40
         print ma_short[-10:]
@@ -29,7 +32,7 @@ def _calcute_ma(code):
         df['ma_'+str(AVR_SHORT)] = ma_short
         df['ma_'+str(AVR_LONG)] = ma_long
 
-        print '计算 ema'
+        print 'calcute ema'
         ema_short = pd.ewma(close_prices, span=AVR_SHORT)  #12
         ema_long = pd.ewma(close_prices, span=AVR_LONG)    #40
         print ema_short[-10:]
@@ -72,10 +75,11 @@ def _calcute_ma(code):
                  ema_s, row[ema_s], ema_l,row[ema_l], \
                   row['date'])
             cursor.execute(sql_update)
-
+            print table_name, row['date']
 
         #关闭数据库
         cursor.close()
+        conn.commit()
         conn.close()
 
     except Exception, e:
@@ -85,4 +89,5 @@ def _calcute_ma(code):
 
 
 if __name__ == "__main__":
+    #_calcute_ma('600000')
     calcute_ma()
