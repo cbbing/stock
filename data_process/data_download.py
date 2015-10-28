@@ -4,11 +4,8 @@
 import sys
 sys.path.append('C:\Code\stock-master')
 
-from sqlalchemy import create_engine
 import tushare as ts
-import os
 import pandas as pd
-import pandas.io.data as web
 import datetime
 from multiprocessing.dummy import Pool as ThreadPool
 from tushare.util import dateu as du
@@ -17,7 +14,7 @@ from util import stockutil as util
 import redis
 from util.stockutil import fn_timer as fn_timer_
 
-from config import *
+from init import *
 from util.commons import *
 
 r = redis.Redis(host='127.0.0.1', port=6379)

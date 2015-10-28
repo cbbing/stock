@@ -5,89 +5,40 @@
 
 import pandas as pd
 import numpy as np
-from data_process.data_get import get_stock_k_line
 
-SIGNAL_BUY = 1  #买 
-SIGNAL_SALE = -1 #卖
-SIGNAL_DEFAULT = 0
-    
+from init import *
+
+
 class MAStrategy:
     
     # df: DataFrame    
-    def __init__(self, stockCsvPath = '', stockData='', df=''):
+    def __init__(self, stockData='', df=''):
         
-        self.AVR_SHORT = 12
-        self.AVR_LONG = 40
-            
-        if len(stockCsvPath) > 0:
-            #方式一
-            df_stockHistory = get_stock_k_line(stockData.code)
-            if len(df_stockHistory) == 0:
-                return
-            #df_stockHistory = pd.read_csv(stockCsvPath)
-            # 将数据按照交易日期从远到近排序
-            df_stockHistory.sort('date', inplace=True)
-            self.close_price = df_stockHistory['close'].get_values()
-            
-            needWrite2Csv = False
-            try:
-                self.ma_12 = df_stockHistory['ma_12'].get_values()
-                self.ma_40 = df_stockHistory['ma_40'].get_values()
-            except Exception as e:  
-                print '重新计算 ma'   
-                self.ma_12 = pd.rolling_mean(self.close_price, self.AVR_SHORT)
-                self.ma_40 = pd.rolling_mean(self.close_price, self.AVR_LONG)
-                needWrite2Csv = True
-                df_stockHistory['ma_12'] = self.ma_12
-                df_stockHistory['ma_40'] = self.ma_40
-                
-            try:
-                self.ema_12 = df_stockHistory['ema_12'].get_values()
-                self.ema_40 = df_stockHistory['ema_40'].get_values()
-            except Exception as e:
-                print '重新计算 ema'
-                self.ema_12 = pd.ewma(self.close_price, span=self.AVR_SHORT)
-                self.ema_40 = pd.ewma(self.close_price, span=self.AVR_LONG)  
-                needWrite2Csv = True
-                df_stockHistory['ema_12'] = self.ema_12
-                df_stockHistory['ema_40'] = self.ema_40
-                
-            if needWrite2Csv:
-                # 将数据按照交易日期从近到远排序
-                df_stockHistory.sort('date', ascending = False, inplace=True)
-                df_stockHistory.to_csv(stockCsvPath)
-                print '保存至'+stockCsvPath
-            
-            self.close_price = np.append(self.close_price, float(stockData.current))
-            
-            # 计算当前的ma
-            last_ma_12 = sum(self.close_price[-self.AVR_SHORT:])/self.AVR_SHORT;
-            last_ma_40 = sum(self.close_price[-self.AVR_LONG:])/self.AVR_LONG;
-            self.ma_12 = np.append(self.ema_12, last_ma_12)
-            self.ma_40 = np.append(self.ema_40, last_ma_40)
-            
-            
-            # 计算当前价的ema
-            last_ema_12 = self.ema_12[-2] * (self.AVR_SHORT-1)/(self.AVR_SHORT+1) + stockData.current * 2/(self.AVR_SHORT+1)
-            last_ema_40 = self.ema_40[-2] * (self.AVR_LONG-1)/(self.AVR_LONG+1) + stockData.current * 2/(self.AVR_LONG+1) 
-            
-            #self.close_price = np.append(self.close_price, float(stockData.current))
-            self.ema_12 = np.append(self.ema_12, last_ema_12)
-            self.ema_40 = np.append(self.ema_40, last_ema_40)
-               
-        
-        else:
-            #方式二
-            # 将数据按照交易日期从远到近排序
-            df.sort('date', inplace=True)
-            self.close_price = df['close'].get_values()
-        
-            self.ma_12 = pd.rolling_mean(self.close_price, self.AVR_SHORT)
-            self.ma_40 = pd.rolling_mean(self.close_price, self.AVR_LONG)
-          
-            self.ema_12 = pd.ewma(self.close_price, span=self.AVR_SHORT)
-            self.ema_40 = pd.ewma(self.close_price, span=self.AVR_LONG)  
-            
+        self.AVR_SHORT = AVR_SHORT
+        self.AVR_LONG = AVR_LONG
+
+        #方式二
+        # 将数据按照交易日期从远到近排序
+        df.sort('date', inplace=True)
+        self.close_price = df['close'].get_values()
+
+        self.close_price = np.append(self.close_price, float(stockData.current))
+
+        #计算当前的ma
+        lastest_ma_short = sum(self.close_price[-self.AVR_SHORT:])/self.AVR_SHORT;
+        lastest_ma_long = sum(self.close_price[-self.AVR_LONG:])/self.AVR_LONG;
+
+        self.ma_short = np.append(df['ma_%d' % self.AVR_SHORT].get_values(), lastest_ma_short)
+        self.ma_long = np.append(df['ma_%d' % self.AVR_LONG].get_values(), lastest_ma_long)
+
+        #计算当前的ema
+        self.ema_short = df["ema_%d" % self.AVR_SHORT].get_values()
+        self.ema_long = df["ema_%d" % self.AVR_LONG].get_values()
+        lastest_ema_short = self.ema_short[-2] * (self.AVR_SHORT-1)/(self.AVR_SHORT+1) + stockData.current * 2 /(self.AVR_SHORT+1)
+        lastest_ema_long = self.ema_long[-2] * (self.AVR_LONG-1)/(self.AVR_LONG+1) + stockData.current * 2 /(self.AVR_LONG+1)
+
+        self.ema_short = np.append(self.ema_short, lastest_ema_short)
+        self.ema_long = np.append(self.ema_long, lastest_ema_long)
           
             
 
@@ -123,8 +74,8 @@ class MAStrategy:
         #EMA 
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
         if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
-            ema_close_short = self.ema_12
-            ema_close_long = self.ema_40
+            ema_close_short = self.ema_short
+            ema_close_long = self.ema_long
         else:     
             ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
             ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
@@ -149,8 +100,8 @@ class MAStrategy:
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
         ma_dea = 10
         if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
-            ema_close_short = self.ema_12
-            ema_close_long = self.ema_40
+            ema_close_short = self.ema_short
+            ema_close_long = self.ema_long
         else:     
             ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
             ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
@@ -178,8 +129,8 @@ class MAStrategy:
         ma_dea = 10
         
         if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
-            ma_close_short = self.ma_12
-            ma_close_long = self.ma_40
+            ma_close_short = self.ma_short
+            ma_close_long = self.ma_long
         else:    
             ma_close_short = pd.rolling_mean(self.close_price, ma_list[0])
             ma_close_long = pd.rolling_mean(self.close_price, ma_list[1])
@@ -205,7 +156,7 @@ class MAStrategy:
         ma_list = [self.AVR_SHORT, self.AVR_SHORT] #N,M
         
         if ma_list[0] == self.AVR_SHORT:
-            ema_close = self.ema_12
+            ema_close = self.ema_short
         else:    
             ema_close = pd.ewma(self.close_price, span=ma_list[0])
         ema_close = pd.ewma(ema_close, span=ma_list[0])

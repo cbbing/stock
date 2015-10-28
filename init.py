@@ -3,6 +3,7 @@ __author__ = 'cbb'
 
 import platform, os
 from sqlalchemy import create_engine
+from util.MyLogger import Logger
 
 #DB_WAY:数据存储方式 'csv'  # or 'mysql' or 'redis' or 'sqlite'
 DB_WAY = 'mysql'
@@ -26,3 +27,20 @@ engine = create_engine('mysql+mysqldb://root:root@%s/stock' % host_mysql)
 # 短均线， 长均线
 AVR_SHORT = 12
 AVR_LONG = 40
+
+#买卖标记
+SIGNAL_BUY = 1  #买
+SIGNAL_SALE = -1 #卖
+SIGNAL_DEFAULT = 0
+
+#阈值
+Threshold_Buy_Count = 3
+Threshold_Sale_Count = 2
+
+#日志设置
+from util.MyLogger import Logger
+infoLogger = Logger(logname='../Log/info.log', logger='I')
+errorLogger = Logger(logname='../Log/error.log', logger='E')
+
+#配置文件 位置
+config_file_path = '../config.ini'

@@ -9,6 +9,7 @@ import pandas as pd
 import util.commons as cm
 import util.stockutil as util
 import time
+from util.stockutil import fn_timer as fn_timer_
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
@@ -82,6 +83,7 @@ def getLiveChinaStockPrice(stockCode):
 
 # 获取A股所有股票的实时股价
 # 通过 ts.get_today_all 获取
+@fn_timer_
 def getAllChinaStock():
     df = ts.get_today_all()
     stockList = []
@@ -97,7 +99,9 @@ def getAllChinaStock():
         stock.dealAmount = se[8]/100
         stock.time = time.localtime(time.time()) #时间
         #print stock
+
         stockList.append(stock)
+
     return stockList
 
 # 获取A股所有股票的实时股价

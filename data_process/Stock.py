@@ -2,7 +2,9 @@
 #coding=utf-8
 
 from datetime import date
-import time
+
+from util.codeConvert import *
+from init import *
 
 stockNameList = [('600000', '浦发银行'), \
                  ('600048', '保利地产'), \
@@ -30,6 +32,8 @@ class Stock:
     dealTurnover = 0 #成交金额
     date = date.today() #日期
     time = time.localtime(time.time()) #时间
+
+    signal = 0
     
     #构造函数
     def __init__(self, sinaStockInfo=''):
@@ -67,5 +71,19 @@ class Stock:
         finally:
             None     
         return ''
+
+    def __str__(self):
+        try:
+            s = '%s\t%s\t%s\t%0.3f' % (self.name, self.code, str(self.current), (float(self.current)-float(self.close))/float(self.close)*100)
+            s = s + '%'
+            #str = '%s  %s  %s  ' % (self.name, self.code, str(self.current))
+            #str = str + str((float(self.current)-float(self.close))/float(self.close)*100) + '%'
+            return s
+        except Exception,e:
+            errorLogger.logger.error(str(e))
+            return ''
+
+    def str_print(self):
+        return self.__str__()
 
     

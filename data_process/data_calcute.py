@@ -2,41 +2,45 @@
 
 __author__ = 'cbb'
 
+import sys
+sys.path.append('C:\Code\stock-master')
+
 import MySQLdb
 import numpy as np
 import pandas as pd
+import datetime
 from data_get import *
 
-import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+
+
 #计算均线
-def calcute_ma():
+def calcute_ma_all():
     codes = get_all_stock_codes()
     for code in codes:
         _calcute_ma(code)
 
-
-def _calcute_ma(code):
+# date_start:'2015-01-01'
+# date_end: '2015-10-12'
+def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
     try:
-        df = get_stock_k_line(code)
+        df = get_stock_k_line(code,date_start, date_end)
         close_prices = df['close'].get_values()
-        print close_prices[-10:]
 
-        print 'calcute ma'
+        infoLogger.logger.info(str(code) + '  ' + 'calcute ma')
         ma_short = pd.rolling_mean(close_prices, AVR_SHORT) #12
         ma_long = pd.rolling_mean(close_prices, AVR_LONG)   #40
-        print ma_short[-10:]
-        print ma_long[-10:]
-        df['ma_'+str(AVR_SHORT)] = ma_short
-        df['ma_'+str(AVR_LONG)] = ma_long
 
-        print 'calcute ema'
+        df[ 'ma_' + str(AVR_SHORT)] = ma_short
+        df['ma_' + str(AVR_LONG)] = ma_long
+
+        infoLogger.logger.info(str(code) + '  ' + 'calcute ema')
         ema_short = pd.ewma(close_prices, span=AVR_SHORT)  #12
         ema_long = pd.ewma(close_prices, span=AVR_LONG)    #40
-        print ema_short[-10:]
-        print ema_long[-10:]
+
         df['ema_'+str(AVR_SHORT)] = ema_short
         df['ema_'+str(AVR_LONG)] = ema_long
 
@@ -64,9 +68,13 @@ def _calcute_ma(code):
             sql = "alter table %s add %s double" % (table_name, ema_l)
             cursor.execute(sql)
         except Exception, e:
-            print e
+            str_error = 'column exists'
+            print ''
 
+        # 按由近到远的顺序排序
+        df = df.sort_index(by='date', ascending=False)
 
+        count = 0
 
         #更新数据
         for ix, row in df.iterrows():
@@ -75,7 +83,12 @@ def _calcute_ma(code):
                  ema_s, row[ema_s], ema_l,row[ema_l], \
                   row['date'])
             cursor.execute(sql_update)
-            print table_name, row['date']
+            infoLogger.logger.info( table_name + ' ' + str(row['date']))
+
+            count = count+1
+            #只计算最后1个收盘
+            if is_calcute_lastest and count >= 1:
+                break
 
         #关闭数据库
         cursor.close()
@@ -83,11 +96,27 @@ def _calcute_ma(code):
         conn.close()
 
     except Exception, e:
-        print e
+        errorLogger.logger.error(str(e))
 
+# 计算最近日期的均线
+def calcute_ma_lastest_all():
+    codes = get_all_stock_codes()
+    for code in codes:
+        _calcute_ma_lastest(code)
+
+# 计算最近日期的均线 (单个)
+def _calcute_ma_lastest(code):
+
+    d_avr_long = datetime.date.today() + datetime.timedelta(days=-AVR_LONG*2)
+    d_today = datetime.date.today()
+    date_start = d_avr_long.strftime('%Y-%m-%d')
+    date_end = d_today.strftime('%Y-%m-%d')
+
+    _calcute_ma(code, date_start, date_end, True)
 
 
 
 if __name__ == "__main__":
-    #_calcute_ma('600000')
-    calcute_ma()
+    #_calcute_ma('600000', '2015-01-01', '2015-10-14', True)
+    #calcute_ma_all()
+    calcute_ma_lastest_all()
