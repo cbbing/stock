@@ -43,9 +43,9 @@ def download_stock_basic_info():
             print df
             df.to_sql(INDEX_STOCK_BASIC, engine, if_exists='replace', index=False)
             
-            sql = 'select * from ' + INDEX_STOCK_BASIC + ' where code = "600000"'
-            dfRead = pd.read_sql(sql, engine)
-            print dfRead
+            # sql = 'select * from ' + INDEX_STOCK_BASIC + ' where code = "600000"'
+            # dfRead = pd.read_sql(sql, engine)
+            # print dfRead
             
         elif DB_WAY == 'redis':
             print 'choose redis'
@@ -253,6 +253,7 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
 def download_kline_source_select(bAtHome, code, date_start, date_end):
     try:
         df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        print df_qfq
         #if bAtHome == True:
         #    df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
         # else:

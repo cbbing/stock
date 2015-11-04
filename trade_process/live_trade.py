@@ -40,6 +40,7 @@ def main():
         stockClassList =OnlineData.getAllChinaStock()
     except Exception,e:
         errorLogger.logger.error(encode_wrap('获取实时估价失败!  ') + str(e))
+        return
 
     # 监听股票列表
     stock_list = ['600000','600048', '600011', '002600', '002505', '000725', '000783', '300315', '002167', '601001',\
@@ -104,11 +105,14 @@ def live_mult_stock(stockClassList):
     stock_buy_list = []
     stock_sale_list = []
     for stock in stockClassList:
-        live_single_stock(stock)
-        if stock.signal > 0:
-            stock_buy_list.append(stock)
-        elif stock.signal < 0:
-            stock_sale_list.append(stock)
+        try:
+            live_single_stock(stock)
+            if stock.signal > 0:
+                stock_buy_list.append(stock)
+            elif stock.signal < 0:
+                stock_sale_list.append(stock)
+        except Exception, e:
+            errorLogger.logger.error((str(e)))
     return stock_buy_list, stock_sale_list      
 
 def live_single_stock(stock):
@@ -177,6 +181,7 @@ def event_func():
         sys.exit(0)
     else:
         print encode_wrap('休市中...')
+        sys.exit(0)
         time.sleep(60)
     #print 'Cycle End', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     infoLogger.logger.info( 'Cycle End >>>  ' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
@@ -188,7 +193,7 @@ def perform(inc):
     s.enter(inc,0,perform,(inc,))
     event_func()
     
-def mymain(inc=60):
+def mymain(inc=60*5):
     s.enter(0,0,perform,(inc,))
     s.run()
    

@@ -87,7 +87,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 
             count = count+1
             #只计算最后1个收盘
-            if is_calcute_lastest and count >= 1:
+            if is_calcute_lastest and count >= AVR_LONG:
                 break
 
         #关闭数据库
@@ -96,7 +96,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
         conn.close()
 
     except Exception, e:
-        errorLogger.logger.error(str(e))
+        errorLogger.logger.error(str(code)+":"+date_start+" ~ "+date_end+str(e))
 
 # 计算最近日期的均线
 def calcute_ma_lastest_all():
@@ -107,7 +107,7 @@ def calcute_ma_lastest_all():
 # 计算最近日期的均线 (单个)
 def _calcute_ma_lastest(code):
 
-    d_avr_long = datetime.date.today() + datetime.timedelta(days=-AVR_LONG*2)
+    d_avr_long = datetime.date.today() + datetime.timedelta(days=-180)
     d_today = datetime.date.today()
     date_start = d_avr_long.strftime('%Y-%m-%d')
     date_end = d_today.strftime('%Y-%m-%d')
@@ -120,3 +120,4 @@ if __name__ == "__main__":
     #_calcute_ma('600000', '2015-01-01', '2015-10-14', True)
     #calcute_ma_all()
     calcute_ma_lastest_all()
+    #_calcute_ma_lastest('000783')

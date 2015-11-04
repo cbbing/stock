@@ -21,7 +21,7 @@ user_mysql = 'root'
 pwd_mysql = 'root'
 db_name_mysql = 'stock'
 
-engine = create_engine('mysql+mysqldb://root:root@%s/stock' % host_mysql)
+engine = create_engine('mysql+mysqldb://root:root@%s/stock' % host_mysql, connect_args={'charset':'utf8'})
 
 
 # 短均线， 长均线
