@@ -228,10 +228,13 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
                 date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
                 date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')
+
+        if date_start >= date_end:
+            return
                 
         print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
         
-        df_qfq = download_kline_source_select(True, code, date_start, date_end)
+        df_qfq = download_kline_source_select(code, date_start, date_end)
         
         if df_qfq is None:
             return None
@@ -250,10 +253,18 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
     return None
 
 # 下载源选择
-def download_kline_source_select(bAtHome, code, date_start, date_end):
+def download_kline_source_select(code, date_start, date_end):
     try:
         df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
-        print df_qfq
+
+        if df_qfq is None:
+            df_qfq = ts.get_hist_data(str(code), start=date_start, end=date_end)
+
+            columns = ['open', 'high', 'close', 'low', 'volume']
+            df_qfq = df_qfq[columns]
+
+            print df_qfq.columns
+
         #if bAtHome == True:
         #    df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
         # else:

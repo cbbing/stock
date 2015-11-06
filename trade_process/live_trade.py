@@ -2,7 +2,8 @@
 #coding=utf-8
 
 import sys
-sys.path.append('C:\Code\stock-master')
+#sys.path.append('C:\Code\stock-master')
+sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
 
 import sched
 import ctypes

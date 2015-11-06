@@ -87,7 +87,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 
             count = count+1
             #只计算最后1个收盘
-            if is_calcute_lastest and count >= AVR_LONG:
+            if is_calcute_lastest and count >= 7:
                 break
 
         #关闭数据库
@@ -101,7 +101,10 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 # 计算最近日期的均线
 def calcute_ma_lastest_all():
     codes = get_all_stock_codes()
+
     for code in codes:
+        if int(code) < 657:
+            continue
         _calcute_ma_lastest(code)
 
 # 计算最近日期的均线 (单个)
@@ -120,4 +123,4 @@ if __name__ == "__main__":
     #_calcute_ma('600000', '2015-01-01', '2015-10-14', True)
     #calcute_ma_all()
     calcute_ma_lastest_all()
-    #_calcute_ma_lastest('000783')
+    #_calcute_ma_lastest('000033')
