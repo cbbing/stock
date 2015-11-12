@@ -2,8 +2,12 @@
 #coding=utf-8
 
 import sys
-#sys.path.append('C:\Code\stock-master')
-sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
+import platform
+
+if platform.system() == 'Windows':
+    sys.path.append('C:\Code\stock-master')
+else:
+    sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
 
 import sched
 import ctypes
