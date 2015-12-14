@@ -22,50 +22,21 @@ r = redis.Redis(host='127.0.0.1', port=6379)
 ###################################
 #-- 获取股票基本信息       --#
 ############################
-# 通过DB_WAY 选择存入csv或mysql
 def download_stock_basic_info():
     
     try:
         df = ts.get_stock_basics()
-        #直接保存
-        if DB_WAY == 'csv':
-            print 'choose csv'
-            df.to_csv(DownloadDir+INDEX_STOCK_BASIC + '.csv');
-            print 'download csv finish'
-            
-        elif DB_WAY == 'mysql':
 
-            print df.columns
-            df[KEY_CODE] = df.index
-            df = df[[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket]]
+        print df.columns
+        df[KEY_CODE] = df.index
+        df = df[[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket]]
 
-            print df.columns
-            print df
-            df.to_sql(INDEX_STOCK_BASIC, engine, if_exists='replace', index=False)
-            
-            # sql = 'select * from ' + INDEX_STOCK_BASIC + ' where code = "600000"'
-            # dfRead = pd.read_sql(sql, engine)
-            # print dfRead
-            
-        elif DB_WAY == 'redis':
-            print 'choose redis'
-            # 查数据库大小
-            print '\ndbsize:%s' %r.dbsize()
-            
-            # 看连接
-            print 'ping %s' %r.ping()
+        print df.columns
+        print df
+        df.to_sql(INDEX_STOCK_BASIC, engine, if_exists='replace', index=False)
 
-            for idx, row in df.iterrows():
-                print idx, row
-                mapStock =  {KEY_CODE:idx, KEY_NAME:row['name'],KEY_INDUSTRY:row['industry'],KEY_AREA:row['area'],\
-                             KEY_TimeToMarket:row['timeToMarket']}
-                # 写入hash表
-                r.hmset(PRE_STOCK_BASIC+idx, mapStock)
-                
-                #索引
-                r.sadd(INDEX_STOCK_BASIC, idx)
-                #r.rpush(INDEX_STOCK_BASIC, idx)
-                #print r.hgetall(PRE_BASIC+idx)            
+            
+
            
     except Exception as e:
         print str(e)        
