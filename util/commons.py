@@ -29,8 +29,8 @@ KEY_LOW = 'low'
 KEY_VOLUME = 'volume'
 KEY_AMOUNT = 'amount'
 
-INDEX_STOCK_BASIC = 'index_basic_all' # 索引：获取所有股票
-INDEX_STOCK_KLINE = 'index_kline:' # 索引：获取单只股票的所有日期的K线
+STOCK_BASIC_TABLE = 'stock_basic_all' # 索引：获取所有股票
+STOCK_KLINE_TABLE = 'stock_kline_all' # 索引：获取单只股票的所有日期的K线
 
 ##################################
 

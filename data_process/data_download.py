@@ -2,7 +2,7 @@
 #!/usr/local/bin/python
 
 import sys
-sys.path.append('C:\Code\stock-master')
+sys.path.append('../')
 
 import tushare as ts
 import pandas as pd
@@ -11,13 +11,11 @@ from multiprocessing.dummy import Pool as ThreadPool
 from tushare.util import dateu as du
 from util import stockutil as util
 
-import redis
 from util.stockutil import fn_timer as fn_timer_
 
 from init import *
 from util.commons import *
 
-r = redis.Redis(host='127.0.0.1', port=6379)
 
 ###################################
 #-- 获取股票基本信息       --#
@@ -32,177 +30,44 @@ def download_stock_basic_info():
         df = df[[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket]]
 
         print df.columns
-        print df
-        df.to_sql(INDEX_STOCK_BASIC, engine, if_exists='replace', index=False)
-
-            
+        print df[:10]
+        df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='replace', index=False)
 
            
     except Exception as e:
         print str(e)        
 
-# 下载股票的K线
-# code:股票代码
-# 默认为前复权数据：open, high, close, low； 不复权数据为：open_no_fq等，后复权数据为：open_hfq
-# 默认为上市日期到今天的K线数据
-def download_stock_kline_csv(code, date_start='', date_end=datetime.date.today()):
-    code = util.getSixDigitalStockCode(code)
-    
-    try:
-        fileName = 'h_kline_' + str(code) + '.csv'
-        
-        writeMode = 'w'
-        if os.path.exists(DownloadDir+fileName):
-            #print (">>exist:" + code)
-            df = pd.DataFrame.from_csv(path=DownloadDir+fileName)
-            
-            se = df.head(1).index #取已有文件的最近日期
-            dateNew = se[0] + datetime.timedelta(1)
-            date_start = dateNew.strftime("%Y-%m-%d")
-            #print date_start
-            writeMode = 'a'
-        
-        if date_start == '':
-            se = get_stock_info(code)
-            date_start = se['timeToMarket'] 
-            date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
-            date_start = date.strftime('%Y-%m-%d')
-        date_end = date_end.strftime('%Y-%m-%d')  
-        date_end = '2015-06-30'
-        # 已经是最新的数据
-        if date_start >= date_end:
-            df = pd.read_csv(DownloadDir+fileName)
-            return df
-        
-        print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
-        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
-        df_nfq = ts.get_h_data(str(code), start=date_start, end=date_end, autype=None) # 不复权
-        df_hfq = ts.get_h_data(str(code), start=date_start, end=date_end, autype='hfq') # 后复权
-        
-        if df_qfq is None or df_nfq is None or df_hfq is None:
-            return None
-        
-        df_qfq['open_no_fq'] = df_nfq['open']
-        df_qfq['high_no_fq'] = df_nfq['high']
-        df_qfq['close_no_fq'] = df_nfq['close']
-        df_qfq['low_no_fq'] = df_nfq['low']
-        df_qfq['open_hfq']=df_hfq['open']
-        df_qfq['high_hfq']=df_hfq['high']
-        df_qfq['close_hfq']=df_hfq['close']
-        df_qfq['low_hfq']=df_hfq['low']
-             
-        if writeMode == 'w':
-            df_qfq.to_csv(DownloadDir+fileName)
-        else:
-            
-            df_old = pd.DataFrame.from_csv(DownloadDir + fileName)
-            
-            # 按日期由远及近
-            df_old = df_old.reindex(df_old.index[::-1])
-            df_qfq = df_qfq.reindex(df_qfq.index[::-1])
-            
-            df_new = df_old.append(df_qfq)
-            #print df_new
-            
-            # 按日期由近及远
-            df_new = df_new.reindex(df_new.index[::-1])
-            df_new.to_csv(DownloadDir+fileName)
-            #df_qfq = df_new
-        
-            print '\ndownload ' + str(code) +  ' k-line to csv finish'
-            return pd.read_csv(DownloadDir+fileName)
-        
-            
-        
-    except Exception as e:
-        print str(e)
 
-    return None
-
-def download_stock_kline_to_redis(code, date_start='', date_end=datetime.date.today()):
-    code = util.getSixDigitalStockCode(code)
-    
-    try:
-        
-        if date_start == '':
-            dates = r.lrange(INDEX_STOCK_KLINE+code, 0, -1)
-            if len(dates) > 0:
-                nearstDate = dates[0]
-                date = datetime.datetime.strptime(str(nearstDate), "%Y-%m-%d") + datetime.timedelta(1)
-                date_start = date.strftime('%Y-%m-%d')
-            else:
-                se = get_stock_info(code) 
-                date_start = se['timeToMarket']
-                date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
-                date_start = date.strftime('%Y-%m-%d')
-        date_end = date_end.strftime('%Y-%m-%d')  
-        
-        print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
-        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
-        
-        if df_qfq is None:
-            return None
-        
-        print 'choose redis'
-        
-        # 查数据库大小
-        print '\ndbsize:%s' %r.dbsize()
-        # 看连接
-        print 'ping %s' %r.ping()
-        
-        for idx, row in df_qfq.iterrows():
-            strDate = str(idx)[0:10]
-            mapStock =  {KEY_DATE:strDate,KEY_OPEN:float(row['open']),KEY_HIGH:float(row['high']),\
-                             KEY_CLOSE:float(row['close']), KEY_VOLUME:float(row['volume']),\
-                              KEY_AMOUNT:float(row['amount'])}
-            # 写入hash表
-            r.hmset(PRE_STOCK_KLINE+code + ':' + strDate, mapStock)
-            
-            #索引
-            r.rpush(INDEX_STOCK_KLINE+code, strDate)
-             
-        
-       
-        
-        print '\ndownload ' + str(code) +  ' k-line to redis finish'
-            
-        
-    except Exception as e:
-        print str(e)        
-    
-        
-    return None
-
+# 下载单只股票到数据库
 def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.today()):
-    code = util.getSixDigitalStockCode(code)
     
     try:
-        
+        # 设置日期范围
         if date_start == '':
             try:
-                sql = 'select %s from %s order by %s desc limit 1' % (KEY_DATE, PRE_STOCK_KLINE+code, KEY_DATE)
-
+                sql = "select MAX({0}) as {0} from {1} where {2}='{3}'".format(KEY_DATE, STOCK_KLINE_TABLE, KEY_CODE, code)
                 df = pd.read_sql_query(sql, engine)
                 dates = df[KEY_DATE].get_values()
+
             except Exception, e:
                 print str(e)
                 dates = ''
             
-            if len(dates) > 0:
-                #print dates
-                nearstDate = str(dates[0])[:10]
-                date = datetime.datetime.strptime(str(nearstDate), "%Y-%m-%d") + datetime.timedelta(1)
-                date_start = date.strftime('%Y-%m-%d')
+            if not dates is None and len(dates) and not dates[0] is None:
+                maxDate = dates[0]
+                maxDate = datetime.datetime.strptime(str(maxDate), "%Y-%m-%d") + datetime.timedelta(1)
+                date_start = maxDate.strftime('%Y-%m-%d')
             else:
                 se = get_stock_info(code) 
-                date_start = se['timeToMarket']
+                date_start = se[KEY_TimeToMarket]
                 date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
                 date_start = date.strftime('%Y-%m-%d')
         date_end = date_end.strftime('%Y-%m-%d')
 
         if date_start >= date_end:
             return
-                
+
+        # 开始下载
         print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
         
         df_qfq = download_kline_source_select(code, date_start, date_end)
@@ -212,9 +77,9 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
         print df_qfq[-10:]
         
         print 'choose  mysql'
-        df_qfq.to_sql(PRE_STOCK_KLINE+code, engine,if_exists='append')
+        df_qfq.to_sql(STOCK_KLINE_TABLE, engine,if_exists='append', index=False)
         
-        print '\ndownload ' + str(code) +  ' k-line to mysql finish'
+        print '\ndownload ' + code +  ' k-line to mysql finish'
             
         
     except Exception as e:
@@ -226,26 +91,23 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
 # 下载源选择
 def download_kline_source_select(code, date_start, date_end):
     try:
-        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        #df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
 
-        if df_qfq is None:
-            df_qfq = ts.get_hist_data(str(code), start=date_start, end=date_end)
+        #if df_qfq is None:
+        df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
+        df_qfq = df_qfq[::-1]
+        df_qfq[KEY_CODE] = code
+        df_qfq[KEY_DATE] = df_qfq.index
 
-            columns = ['open', 'high', 'close', 'low', 'volume']
-            df_qfq = df_qfq[columns]
 
-            print df_qfq.columns
+        columns = [KEY_CODE, KEY_DATE, KEY_OPEN, KEY_HIGH, KEY_CLOSE, KEY_LOW, KEY_VOLUME]
+        df_qfq = df_qfq[columns]
 
-        #if bAtHome == True:
-        #    df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
-        # else:
-        #     exchange = ".sh" if (int(code) // 100000 == 6) else ".sz"
-        #     df_qfq = web.get_data_yahoo(code + exchange, date_start, date_end, adjust_price=True)
-        #
-        #     d = {KEY_DATE: df_qfq.index.get_values(), KEY_OPEN:df_qfq['Open'].get_values(), KEY_HIGH:df_qfq['High'].get_values(), \
-        #          KEY_CLOSE:df_qfq['Close'].get_values(), KEY_LOW:df_qfq['Low'].get_values(), KEY_VOLUME:df_qfq['Volume'].get_values()}
-        #     df_qfq = pd.DataFrame(d)
-        return df_qfq    
+
+
+        print df_qfq[-5:]
+
+        return df_qfq
     except Exception as e:
         print str(e)
         
@@ -293,51 +155,27 @@ def download_stock_quotes(code, date_start='', date_end=str(datetime.date.today(
 # 返回值类型：Series
 def get_stock_info(code):
     try:
-        if DB_WAY == 'csv':
-        
-            df = pd.DataFrame.from_csv(DownloadDir + INDEX_STOCK_BASIC + '.csv')
-            #se = df.loc[int(code)]
-            se = df.ix[int(code)]
-            
-        elif DB_WAY == 'redis':
-            se = pd.Series(r.hgetall(PRE_STOCK_BASIC+code))
-        
-        elif DB_WAY == 'sqlite' or DB_WAY == 'mysql':
-            sql = "select * from %s where %s='%s'" % (INDEX_STOCK_BASIC,KEY_CODE, code)
-            df = pd.read_sql_query(sql, engine)
-            se = df.ix[0]
+        sql = "select * from %s where %s='%s'" % (STOCK_BASIC_TABLE, KEY_CODE, code)
+        df = pd.read_sql_query(sql, engine)
+        se = df.ix[0]
     except Exception as e:
         print str(e)
-    return se            
+    return se
+
 # 获取所有股票的历史K线
 @fn_timer_
 def download_all_stock_history_k_line():
     print 'download all stock k-line start'
     
     try:
-        if DB_WAY == 'csv':
-            df = pd.DataFrame.from_csv(DownloadDir + INDEX_STOCK_BASIC + '.csv')
-            #se = df.loc[int(code)]
-            #se = df.ix[code]
-            pool = ThreadPool(processes=20)
-            pool.map(download_stock_kline_csv, df.index)
-            pool.close()
-            pool.join()
-        elif DB_WAY == 'redis':
-            codes = r.smembers(INDEX_STOCK_BASIC)
-            #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-            pool = ThreadPool(processes=20)
-            pool.map(download_stock_kline_to_redis, codes)
-            pool.close()
-            pool.join()     
-        elif DB_WAY == 'mysql':
-            df = pd.read_sql_table(INDEX_STOCK_BASIC, engine)
-            codes = df[KEY_CODE].get_values() 
-            #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-            pool = ThreadPool(processes=2)
-            pool.map(download_stock_kline_to_sql, codes)
-            pool.close()
-            pool.join()
+
+        df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
+        codes = df[KEY_CODE].get_values()
+        #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
+        pool = ThreadPool(processes=20)
+        pool.map(download_stock_kline_to_sql, codes)
+        pool.close()
+        pool.join()
 
     except Exception as e:
         print str(e)

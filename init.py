@@ -13,15 +13,16 @@ DB_NAME = 'stock'
 DownloadDir = os.path.pardir + '/stockdata/' # os.path.pardir: 上级目录
 
 # mysql Host
-if platform.system() == 'Windows':
-    host_mysql = 'localhost'
-else:
-    host_mysql = '101.200.183.216'
-user_mysql = 'root'
-pwd_mysql = 'root'
-db_name_mysql = 'stock'
+# if platform.system() == 'Windows':
+#     host_mysql = 'localhost'
+# else:
+#     host_mysql = '101.200.183.216'
+host_mysql = '127.0.0.1'
+user_mysql = 'Admin'
+pwd_mysql = '1234'
+db_name_mysql = 'wealth_db'
 
-engine = create_engine('mysql+mysqldb://root:root@%s/stock' % host_mysql, connect_args={'charset':'utf8'})
+engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' % (user_mysql, pwd_mysql, host_mysql, db_name_mysql), connect_args={'charset':'utf8'})
 
 
 # 短均线， 长均线
