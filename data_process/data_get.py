@@ -14,7 +14,7 @@ from util.commons import *
 # 获取所有股票代码
 def get_all_stock_codes():
     if DB_WAY == 'mysql':
-        sql = 'select %s from %s' % (KEY_CODE, INDEX_STOCK_BASIC)
+        sql = 'select %s from %s' % (KEY_CODE, STOCK_BASIC_TABLE)
         df = pd.read_sql_query(sql, engine)
         codes = df[KEY_CODE].get_values()
         return codes
@@ -28,20 +28,17 @@ def get_all_stock_codes():
 # output:
 # -> DataFrame
 def get_stock_k_line(code, date_start='', date_end='', all_columns = False):
-    code = getSixDigitalStockCode(code)
 
     if len(date_end) == 0:
         date_end=datetime.date.today().strftime("%Y-%m-%d")
 
-
-    #DB_WAY == 'mysql':
     try:
         if len(date_start) == 0:
-            sql = "select * from %s where %s <= '%s' order by %s asc" % \
-                (PRE_STOCK_KLINE+code, KEY_DATE, date_end, KEY_DATE)
+            sql = "select * from {0} where {1}='{2}' and {3} <= '{4}' order by {3} asc".format(
+                STOCK_KLINE_TABLE, KEY_CODE, code,  KEY_DATE, date_end)
         else:
-            sql = "select * from %s where %s >= '%s' and %s <= '%s' order by %s asc" % \
-                (PRE_STOCK_KLINE+code, KEY_DATE, date_start, KEY_DATE, date_end, KEY_DATE)
+            sql = "select * from {0} where {1}='{2}' and {3} > '{4}' and {3} <= '{5}' order by {3} asc".format(
+                STOCK_KLINE_TABLE, KEY_CODE, code,  KEY_DATE, date_start, date_end)
 
         df = pd.read_sql_query(sql, engine)
         return df

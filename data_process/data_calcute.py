@@ -48,25 +48,21 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 
         #写数据库
 
-        #连接
-        conn=MySQLdb.connect(host=host_mysql,user=user_mysql,passwd=pwd_mysql,db=db_name_mysql,charset="utf8")
-        cursor = conn.cursor()
-
         # 增加列
-        table_name = PRE_STOCK_KLINE + code
+        table_name =STOCK_KLINE_TABLE
         ma_s = 'ma_' + str(AVR_SHORT)
         ma_l = 'ma_' + str(AVR_LONG)
         ema_s = 'ema_' + str(AVR_SHORT)
         ema_l = 'ema_' + str(AVR_LONG)
         try:
             sql = "alter table %s add %s double" % (table_name, ma_s)
-            cursor.execute(sql)
+            engine.execute(sql)
             sql = "alter table %s add %s double" % (table_name, ma_l)
-            cursor.execute(sql)
+            engine.execute(sql)
             sql = "alter table %s add %s double" % (table_name, ema_s)
-            cursor.execute(sql)
+            engine.execute(sql)
             sql = "alter table %s add %s double" % (table_name, ema_l)
-            cursor.execute(sql)
+            engine.execute(sql)
         except Exception, e:
             str_error = 'column exists'
             print ''
@@ -78,22 +74,17 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 
         #更新数据
         for ix, row in df.iterrows():
-            sql_update = "update %s set %s=%f,%s=%f,%s=%f,%s=%f where date='%s'" % \
+            sql_update = "update %s set %s=%f,%s=%f,%s=%f,%s=%f where date='%s' and %s='%s'" % \
                 (table_name, ma_s, row[ma_s], ma_l, row[ma_l],
                  ema_s, row[ema_s], ema_l,row[ema_l], \
-                  row['date'])
-            cursor.execute(sql_update)
+                  row['date'], KEY_CODE, code)
+            engine.execute(sql_update)
             infoLogger.logger.info( table_name + ' ' + str(row['date']))
 
             count = count+1
             #只计算最后1个收盘
             if is_calcute_lastest and count >= 7:
                 break
-
-        #关闭数据库
-        cursor.close()
-        conn.commit()
-        conn.close()
 
     except Exception, e:
         errorLogger.logger.error(str(code)+":"+date_start+" ~ "+date_end+str(e))
@@ -103,8 +94,6 @@ def calcute_ma_lastest_all():
     codes = get_all_stock_codes()
 
     for code in codes:
-        if int(code) < 657:
-            continue
         _calcute_ma_lastest(code)
 
 # 计算最近日期的均线 (单个)
@@ -121,6 +110,6 @@ def _calcute_ma_lastest(code):
 
 if __name__ == "__main__":
     #_calcute_ma('600000', '2015-01-01', '2015-10-14', True)
-    #calcute_ma_all()
-    calcute_ma_lastest_all()
+    calcute_ma_all()
+    #calcute_ma_lastest_all()
     #_calcute_ma_lastest('000033')

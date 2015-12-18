@@ -15,6 +15,7 @@ from util.stockutil import fn_timer as fn_timer_
 
 from init import *
 from util.commons import *
+from data_calcute import calcute_ma_all
 
 
 ###################################
@@ -65,6 +66,7 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
         date_end = date_end.strftime('%Y-%m-%d')
 
         if date_start >= date_end:
+            print 'Code:{0} is updated to {1}'.format(code, date_start)
             return
 
         # 开始下载
@@ -171,11 +173,15 @@ def download_all_stock_history_k_line():
 
         df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
         codes = df[KEY_CODE].get_values()
+        print 'total stocks:{0}'.format(len(codes))
+        for code in codes:
+            download_stock_kline_to_sql(code)
+
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-        pool = ThreadPool(processes=20)
-        pool.map(download_stock_kline_to_sql, codes)
-        pool.close()
-        pool.join()
+        # pool = ThreadPool(processes=20)
+        # pool.map(download_stock_kline_to_sql, codes)
+        # pool.close()
+        # pool.join()
 
     except Exception as e:
         print str(e)
@@ -185,9 +191,11 @@ def download_all_stock_history_k_line():
 if __name__ == '__main__'  :  
     download_stock_basic_info()
     download_all_stock_history_k_line()
-    #download_stock_kline_to_sql('600000')
+    calcute_ma_all()
+    #download_stock_kline_to_sql('000001')
     
     #convertRedisToSqlite()
+
     
 
 
