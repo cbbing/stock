@@ -30,14 +30,14 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
         df = get_stock_k_line(code,date_start, date_end)
         close_prices = df['close'].get_values()
 
-        infoLogger.logger.info(str(code) + '  ' + 'calcute ma')
+        print str(code) + '  ' + 'calcute ma'
         ma_short = pd.rolling_mean(close_prices, AVR_SHORT) #12
         ma_long = pd.rolling_mean(close_prices, AVR_LONG)   #40
 
         df[ 'ma_' + str(AVR_SHORT)] = ma_short
         df['ma_' + str(AVR_LONG)] = ma_long
 
-        infoLogger.logger.info(str(code) + '  ' + 'calcute ema')
+        print str(code) + '  ' + 'calcute ema'
         ema_short = pd.ewma(close_prices, span=AVR_SHORT)  #12
         ema_long = pd.ewma(close_prices, span=AVR_LONG)    #40
 
@@ -79,7 +79,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
                  ema_s, row[ema_s], ema_l,row[ema_l], \
                   row['date'], KEY_CODE, code)
             engine.execute(sql_update)
-            infoLogger.logger.info( table_name + ' ' + str(row['date']))
+            print table_name + ' ' + str(row['date'])
 
             count = count+1
             #只计算最后1个收盘
@@ -87,7 +87,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
                 break
 
     except Exception, e:
-        errorLogger.logger.error(str(code)+":"+date_start+" ~ "+date_end+str(e))
+        print (str(code)+":"+date_start+" ~ "+date_end+str(e))
 
 # 计算最近日期的均线
 def calcute_ma_lastest_all():

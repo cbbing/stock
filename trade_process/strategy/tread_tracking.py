@@ -9,6 +9,7 @@ from data_process.data_get import get_stock_k_line
 from tushare.util import dateu as du
 import datetime
 import tushare as ts
+import cwavelet
 
 #参数
 prama_ma_short = 15 # 短均线
@@ -36,7 +37,7 @@ def tread_track_live_trading(code, price_now, df=None):
     
     try:
         df = get_stock_k_line(code)
-        df = df.reindex(df.index[::-1])
+        #df = df.reindex(df.index[::-1])
     except Exception as e:
         print str(e)
         return    
@@ -216,11 +217,11 @@ def tread_track_backtest(code, df=None):
     #df = df[df.index > date_start]
     #print df
     
-    try:
-        df = df.reindex(df.index[::-1])
-    except Exception as e:
-        print str(e)
-        return    
+    # try:
+    #     df = df.reindex(df.index[::-1])
+    # except Exception as e:
+    #     print str(e)
+    #     return
     #print df
     
     close_price = df['close'].get_values()
@@ -261,10 +262,32 @@ def tread_track_backtest(code, df=None):
                 ma_short[i] = ma_short[extreIndex]
                 #print i,ma_short[i]
     
-    plt.plot(df.index, ma_short.get_values(), label=code, color="r", linewidth=1)
-    
-    # 交易次数
-    count_sale = 0 
+    #plt.plot(df.index, ma_short.get_values(), label=code, color="r", linewidth=1)
+
+    # trick to get the axes
+    fig,ax = plt.subplots()
+
+    xValues = close_price[-200:]
+    ax.plot(xValues, label=code, color="r", linewidth=1)
+    zValues = cwavelet.getWaveletData(xValues, 'db2', 2, 'sqtwolog')
+    zxValue = np.arange(0,len(zValues),1)
+    #plt.figure(figsize=(16,8))
+
+    ax.plot(zxValue, zValues, color="b", linewidth=2)
+    ax.grid()
+
+    # make ticks and tick labels
+    xticks=range(0, len(xValues)+1,10)
+    xticklabels=['2000-01-0'+str(n) for n in range(1,len(xValues)+1)]
+
+    # set ticks and tick labels
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels,rotation=15)
+
+    #plt.legend()
+    plt.show()
+
+    # 交易次数    count_sale = 0
     count_buy = 0
     
     min_index_pre = 0 #前一个极小值
@@ -313,7 +336,7 @@ def tread_track_backtest(code, df=None):
             if bLongMA_protect_close and max_index_pre > 0 and ma_short[i] < ma_short[max_index_pre] + drift*(i-max_index_pre) and signal == SIGNAL_BUY:
                 signal = SIGNAL_SALE
                 print '卖出:', close_price[i], 'pos:', i
-                count_sale += 1
+                #count_sale += 1
                 total += close_price[i] - price_buy
                 
                 stock_money += stock_count * close_price[i]
@@ -340,7 +363,7 @@ def tread_track_backtest(code, df=None):
                 ma_short[i] < ma_short[min_index_pre] + drift*(i-min_index_pre):
             signal = SIGNAL_SALE
             print '卖出:', close_price[i], 'pos:', i
-            count_sale += 1
+            #count_sale += 1
             total += close_price[i] - price_buy
             
             stock_money += stock_count * close_price[i]
@@ -365,7 +388,7 @@ def tread_track_backtest(code, df=None):
                  ma_short[i] < keep_stop_price + drift*(i-keep_stop_index):    
             signal = SIGNAL_SALE
             print '卖出:', close_price[i], 'pos:', i
-            count_sale += 1
+            #count_sale += 1
             total += close_price[i] - price_buy
             
             stock_money += stock_count * close_price[i]
@@ -375,7 +398,7 @@ def tread_track_backtest(code, df=None):
             
             
     print "buy count:", count_buy
-    print "sale count:", count_sale
+    #print "sale count:", count_sale
     
     if stock_count > 0:
         stock_money += stock_count * close_price[-1]
@@ -397,9 +420,12 @@ if __name__ == "__main__":
 #         result.append(tread_track_backtest(code))
 #     print '平均盈亏',sum(result)/len(list_stock), '%'
     #result += tread_track('150172')         
-    df = ts.get_realtime_quotes(list_stock)
-    for index in df.index:
-        tread_track_live_trading(list_stock[index], df.iloc[index]['price'])
+    # df = ts.get_realtime_quotes(list_stock)
+    # for index in df.index:
+    #     tread_track_live_trading(list_stock[index], df.iloc[index]['price'])
+
+    #for code in list_stock:
+    tread_track_backtest('600000')
     
     
     

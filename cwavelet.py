@@ -122,8 +122,8 @@ def getWavePacketData(values, waveletName, level, forecastCount):
     
 if __name__ == '__main__':
     values = range(16)
+    plt.plot(values)
     for i in np.arange(4,5):
         name = "db"+str(i)
-        getWavePacketData(values, name, 3, 3)   
-        break 
-    
+        print getWavePacketData(values, name, 3, 3)
+        plt.plot(values)
