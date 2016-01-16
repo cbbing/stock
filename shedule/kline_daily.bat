@@ -1,3 +1,1 @@
-cd C:\Code\stock-master\data_process
-python data_download.py
-python data_calcute.py
+python E:\Code\stock\data_process\data_download.py

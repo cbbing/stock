@@ -9,6 +9,8 @@ import tushare as ts
 from util.stockutil import getSixDigitalStockCode
 from init import *
 from util.commons import *
+from util.codeConvert import *
+from util.helper import fn_timer
 
 
 # 获取所有股票代码
@@ -41,6 +43,35 @@ def get_stock_k_line(code, date_start='', date_end='', all_columns = False):
                 STOCK_KLINE_TABLE, KEY_CODE, code,  KEY_DATE, date_start, date_end)
 
         df = pd.read_sql_query(sql, engine)
+        return df
+    except Exception as e:
+        print str(e)
+        return None
+
+@fn_timer
+def get_stock_k_line_if_ma_is_null(code):
+
+    sql = 'SELECT min(date) as date FROM {table} where code={code} and ma_12 is NULL'.format(table=STOCK_KLINE_TABLE, code=code)
+    df = pd.read_sql_query(sql, engine)
+
+    d_end=datetime.datetime.today()
+    #date_end =d_end.strftime('%Y-%m-%d')
+    if len(df) > 0:
+        date_start = df.ix[0, 'date']
+        if date_start is None:
+            return None
+
+        date_start = str(date_start)[:10]
+        d_start = str_to_datatime(date_start, '%Y-%m-%d')
+        delta = d_end - d_start
+        days = delta.days + AVR_LONG + 1
+
+    try:
+        sql = "select * from {table} where code='{code}' order by date desc limit {count}".format(
+               table=STOCK_KLINE_TABLE, code=code,  count=days)
+
+        df = pd.read_sql_query(sql, engine)
+        df = df.sort_index(by='date', ascending=True)
         return df
     except Exception as e:
         print str(e)

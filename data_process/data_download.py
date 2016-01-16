@@ -9,6 +9,8 @@ import pandas as pd
 import datetime
 from multiprocessing.dummy import Pool as ThreadPool
 from tushare.util import dateu as du
+from tqdm import tqdm
+
 from util import stockutil as util
 
 from util.stockutil import fn_timer as fn_timer_
@@ -174,14 +176,14 @@ def download_all_stock_history_k_line():
         df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
         codes = df[KEY_CODE].get_values()
         print 'total stocks:{0}'.format(len(codes))
-        for code in codes:
-            download_stock_kline_to_sql(code)
+        # for code in codes:
+        #     download_stock_kline_to_sql(code)
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-        # pool = ThreadPool(processes=20)
-        # pool.map(download_stock_kline_to_sql, codes)
-        # pool.close()
-        # pool.join()
+        pool = ThreadPool(processes=20)
+        pool.map(download_stock_kline_to_sql, codes)
+        pool.close()
+        pool.join()
 
     except Exception as e:
         print str(e)
