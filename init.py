@@ -17,9 +17,9 @@ DownloadDir = os.path.pardir + '/stockdata/' # os.path.pardir: 上级目录
 #     host_mysql = 'localhost'
 # else:
 #     host_mysql = '101.200.183.216'
-host_mysql = '127.0.0.1'
-user_mysql = 'Admin'
-pwd_mysql = '1234'
+host_mysql = 'rdsw5ilfm0dpf8lee609.mysql.rds.aliyuncs.com'
+user_mysql = 'licj'
+pwd_mysql = 'AAaa1234'
 db_name_mysql = 'wealth_db'
 
 engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' % (user_mysql, pwd_mysql, host_mysql, db_name_mysql), connect_args={'charset':'utf8'})
@@ -40,8 +40,8 @@ Threshold_Sale_Count = 2
 
 #日志设置
 from util.MyLogger import Logger
-infoLogger = Logger(logname='../Log/info.log', logger='I')
-errorLogger = Logger(logname='../Log/error.log', logger='E')
+#infoLogger = Logger(logname='../Log/info.log', logger='I')
+#errorLogger = Logger(logname='../Log/error.log', logger='E')
 
 #配置文件 位置
 config_file_path = '../config.ini'
