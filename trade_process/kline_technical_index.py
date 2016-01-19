@@ -4,6 +4,7 @@ K线图 - 技术指标
 """
 
 import wrapcache
+from tqdm import tqdm
 
 from data_process.data_get import get_all_stock_codes, get_stock_k_line
 
@@ -64,14 +65,16 @@ def form_devour(code, df_code):
         if trend == -1 and \
                 (row_pre.close < row_pre.open or abs(row_pre.close-row_pre.open)/row_pre.close <= 0.01) and \
                 row.close > row_pre.open and \
-                row.open  < row_pre.close:
+                row.open < row_pre.close:
+            print row_pre
+            print row
             dates_devour_raise.append(str(row['date']))
 
         # 2,看跌吞没形态
         if trend == 1 and \
                 (row_pre.close > row_pre.open or abs(row_pre.close-row_pre.open)/row_pre.close <= 0.01) and \
                 row.close < row_pre.open and \
-                row.open  > row_pre.close:
+                row.open > row_pre.close:
             dates_devour_fall.append(str(row['date']))
 
     code_dict = {}
@@ -98,8 +101,9 @@ def _judge_trend(df_code):
 
 def run():
     codes = get_all_stock_codes()
-    for code in codes:
-        df = get_stock_k_line(code, date_start='2015-06-01')
+    codes = ['000591', '000611']
+    for code in tqdm(codes):
+        df = get_stock_k_line(code, date_start='2015-10-01')
         #code_dict = line_hammer_or_hang(code, df)
         code_dict = form_devour(code, df)
 
