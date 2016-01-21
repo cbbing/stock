@@ -123,9 +123,10 @@ def shape_dark_cloud_cover_top(code, df_code):
     #print code_dict
     return code_dict
 
-def line_morning_and_evening_star(code, df_code):
+def shape_morning_and_evening_star(code, df_code):
     """
     启明星形态(底部反转) | 黄昏星形态(顶部反转)
+    含十字线形态
     :return: dict
     """
     dates_up = []  #看涨
@@ -137,16 +138,56 @@ def line_morning_and_evening_star(code, df_code):
         row_pre = df_code.ix[ix-1]
         row_post = df_code.ix[ix+1]
 
-        if abs(row.open - row.close)/row.open < 0.02: # 星线
+        if abs(row.open - row.close)/row.open < 0.02: # 星线 或 十字线
             if row_pre.close < row_pre.open and (row_pre.open-row_pre.close)/row_pre.open > 0.03: #前一天是黑色实体 且跌幅>3%
-                if max(row.open, row.close) < row_pre.close: #当前天的实体部分与前一天的实体形成价格跳空
+                if max(row.open, row.close) < min(row_pre.close, row_pre.open): #当前天的实体部分与前一天的实体形成价格跳空
                     if row_post.close > row_post.open and row_post.close > row_pre.close: #后一天是白色实体 且收盘价向上推进到前一天的黑色实体之内
                         dates_up.append(str(row.date))
 
             elif row_pre.close > row_pre.open and (row_pre.close-row_pre.open)/row_pre.open > 0.03: #前一天是白色实体 且涨幅>3%
-                if min(row.open, row.close) > row_pre.close: #当前天的实体部分与前一天的实体形成价格跳空
+                if min(row.open, row.close) > max(row_pre.close, row_pre.open): #当前天的实体部分与前一天的实体形成价格跳空
                     if row_post.close < row_post.open and row_post.close < row_pre.close: #后一天是黑色实体 且收盘价向下推进到前一天的白色实体之内
                         dates_down.append(str(row.date))
+
+
+    code_dict = {}
+    code_dict[code] = {'up': dates_up, 'down':dates_down}
+    #print code_dict
+    return code_dict
+
+def shape_meteor_and_invertedhammer_star(code, df_code):
+    """
+    流星形态 | 倒锤子线
+    -- 非主要反转信号
+    :return: dict
+    """
+    dates_up = []  #看涨
+    dates_down = []   #看跌
+
+    len_df = len(df_code)
+    for ix, row in df_code[5:len_df-1].iterrows():
+
+        row_pre = df_code.ix[ix-1]
+        row_post = df_code.ix[ix+1]
+        pct_changes = df_code.ix[ix-5:ix].close.pct_change()
+
+        #定义流星: 1,流星实体部分较小; 2,白色或黑色皆可#流星上影线较长; 3,下影线几乎没有(长度小于实体的1/10)
+        meteor_star = abs(row.open - row.close)/row.open < 0.02 and \
+                        row.high-max(row.open, row.close) > abs(row.open - row.close) * 2 and \
+                        abs(row.low-min(row.open, row.close)) < abs(row.open - row.close) * 0.1
+        if meteor_star:
+            #流星
+            if len(pct_changes[pct_changes > 0]) >= 3: # 必须近期总体趋势是向上的
+                if min(row.open, row.close) > max(row_pre.close, row_pre.open): # 当前天的实体部分与前一天的实体形成价格跳空
+                    if max(row_post.open, row_post.close) < min(row.close, row.open) or \
+                            (row_post.open - row_post.close)/row_post.open > 0.03: # 后一天向下跳空 或 跌幅>3%
+                        dates_down.append(str(row.date))
+            #倒锤子线
+            if len(pct_changes[pct_changes < 0]) >= 3: # 必须近期总体趋势是向下的
+                if max(row.open, row.close) < min(row_pre.close, row_pre.open): # 当前天的实体部分与前一天的实体形成价格跳空
+                    if min(row_post.open, row_post.close) > max(row.close, row.open) or \
+                            (row_post.close - row_post.open)/row_post.open > 0.03: # 后一天向上跳空 或 涨幅>3%
+                        dates_up.append(str(row.date))
 
 
     code_dict = {}
@@ -173,13 +214,15 @@ def _judge_trend(df_code):
 def run():
     codes = list(get_all_stock_codes())
     codes.reverse()
-    #codes = ['000591', '000611']
+    #codes = ['603999']
     result_list = []
     for code in tqdm(codes):
-        df = get_stock_k_line(code, date_start='2016-01-12')
+        df = get_stock_k_line(code, date_start='2016-01-01')
         #code_dict = line_hammer_and_hang(code, df)
         #code_dict = shape_devour(code, df)
-        code_dict = line_morning_and_evening_star(code, df)
+        #code_dict = shape_morning_and_evening_star(code, df)
+        code_dict = shape_meteor_and_invertedhammer_star(code, df)
+
 
         result_list.append(code_dict)
 
