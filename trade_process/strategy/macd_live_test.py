@@ -19,7 +19,7 @@ class MAStrategy:
 
         #方式二
         # 将数据按照交易日期从远到近排序
-        df.sort('date', inplace=True)
+        df.sort_values(by='date', inplace=True)
         self.close_price = df['close'].get_values()
 
         self.close_price = np.append(self.close_price, float(stockData.current))

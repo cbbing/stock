@@ -214,17 +214,27 @@ def _judge_trend(df_code):
 def run():
     codes = list(get_all_stock_codes())
     codes.reverse()
-    #codes = ['603999']
+    codes = ['000725']
     result_list = []
     for code in tqdm(codes):
         df = get_stock_k_line(code, date_start='2016-01-01')
-        #code_dict = line_hammer_and_hang(code, df)
-        #code_dict = shape_devour(code, df)
-        #code_dict = shape_morning_and_evening_star(code, df)
-        code_dict = shape_meteor_and_invertedhammer_star(code, df)
 
-
+        code_dict = line_hammer_and_hang(code, df)
         result_list.append(code_dict)
+
+        code_dict = shape_dark_cloud_cover_top(code, df)
+        result_list.append(code_dict)
+
+        code_dict = shape_devour(code, df)
+        result_list.append(code_dict)
+
+        code_dict = shape_morning_and_evening_star(code, df)
+        result_list.append(code_dict)
+
+        code_dict = shape_meteor_and_invertedhammer_star(code, df)
+        result_list.append(code_dict)
+
+
 
     for result in result_list:
         for code, d in result.items():

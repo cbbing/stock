@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 #coding=utf-8
 import os
-import matplotlib.mlab as mlab
+#import matplotlib.mlab as mlab
 import sys
 #import chardet
 

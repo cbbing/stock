@@ -11,9 +11,11 @@ from init import *
 from util.commons import *
 from util.codeConvert import *
 from util.helper import fn_timer
+import wrapcache
 
 
 # 获取所有股票代码
+@wrapcache.wrapcache(timeout=8*60*60)
 def get_all_stock_codes():
     if DB_WAY == 'mysql':
         sql = 'select %s from %s' % (KEY_CODE, STOCK_BASIC_TABLE)
@@ -29,6 +31,7 @@ def get_all_stock_codes():
 # ->code: 股票代码
 # output:
 # -> DataFrame
+@wrapcache.wrapcache(timeout=8*60*60)
 def get_stock_k_line(code, date_start='', date_end='', all_columns = False):
 
     if len(date_end) == 0:

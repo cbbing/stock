@@ -5,7 +5,7 @@ import sys
 import platform
 
 if platform.system() == 'Windows':
-    sys.path.append('C:\Code\stock-master')
+    sys.path.append('../')
 else:
     sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
 
@@ -78,27 +78,27 @@ def main():
     send_email_163(subject='均线趋势量化结果', content=str_all)
 
 # 获取所有股票的实时股价   
-@fn_timer_  
-def get_all_stock_current_price():
-    if DB_WAY == 'redis':
-        r = redis.Redis(host='127.0.0.1', port=6379)
-        stockList = list(r.smembers(INDEX_STOCK_BASIC))
-    elif DB_WAY == 'sqlite':
-        engine = create_engine('sqlite:///..\stocks.db3')
-        sql = 'select %s from %s' % (KEY_CODE, INDEX_STOCK_BASIC)
-        df = pd.read_sql_query(sql, engine)
-        stockList = df[KEY_CODE].get_values()
-    
-    stockList_group = util.group_list(stockList, 20)
-    
-    stockClassList = []
-    for eachList in stockList_group:
-        #print eachList
-        eachClasses = OnlineData.getLiveMutliChinaStockPrice(eachList)
-        if eachClasses != []:
-            stockClassList.extend(eachClasses) 
-    print '交易股票总数：%d' % len(stockClassList)
-    return stockClassList
+# @fn_timer_
+# def get_all_stock_current_price():
+#     if DB_WAY == 'redis':
+#         r = redis.Redis(host='127.0.0.1', port=6379)
+#         stockList = list(r.smembers(INDEX_STOCK_BASIC))
+#     elif DB_WAY == 'sqlite':
+#         engine = create_engine('sqlite:///..\stocks.db3')
+#         sql = 'select %s from %s' % (KEY_CODE, INDEX_STOCK_BASIC)
+#         df = pd.read_sql_query(sql, engine)
+#         stockList = df[KEY_CODE].get_values()
+#
+#     stockList_group = util.group_list(stockList, 20)
+#
+#     stockClassList = []
+#     for eachList in stockList_group:
+#         #print eachList
+#         eachClasses = OnlineData.getLiveMutliChinaStockPrice(eachList)
+#         if eachClasses != []:
+#             stockClassList.extend(eachClasses)
+#     print '交易股票总数：%d' % len(stockClassList)
+#     return stockClassList
 
 @fn_timer_        
 def live_mult_stock(stockClassList):  
@@ -186,7 +186,7 @@ def event_func():
         sys.exit(0)
     else:
         print encode_wrap('休市中...')
-        sys.exit(0)
+        #sys.exit(0)
         time.sleep(60)
     #print 'Cycle End', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     infoLogger.logger.info( 'Cycle End >>>  ' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))

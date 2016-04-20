@@ -1,2 +1,2 @@
-cd C:\Code\stock-master\trade_process
+cd E:\Code\stock\trade_process
 python live_trade.py
