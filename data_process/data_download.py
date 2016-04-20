@@ -34,7 +34,19 @@ def download_stock_basic_info():
 
         print df.columns
         print df[:10]
+
         df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='replace', index=False)
+
+        # 添加指数
+        indexs = [('sh', '上证指数', '指数','全国','19910715'),
+                  ('sz', '深圳成指', '指数','全国','19940720'),
+                  ('hs300', '沪深300指数', '指数','全国','20050408'),
+                  ('sz50', '上证50指数', '指数','全国','20040102'),
+                  ('zxb', '中小板指数', '指数','全国','20050607'),
+                  ('cyb', '创业板指数', '指数','全国','20100531'),]
+        df = pd.DataFrame(indexs, columns=[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket])
+        print df
+        df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='append', index=False)
 
            
     except Exception as e:
@@ -47,14 +59,14 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
     try:
         # 设置日期范围
         if date_start == '':
-            try:
-                sql = "select MAX({0}) as {0} from {1} where {2}='{3}'".format(KEY_DATE, STOCK_KLINE_TABLE, KEY_CODE, code)
-                df = pd.read_sql_query(sql, engine)
-                dates = df[KEY_DATE].get_values()
 
-            except Exception, e:
-                print str(e)
-                dates = ''
+            sql = "select MAX({0}) as {0} from {1} where {2}='{3}'".format(KEY_DATE, STOCK_KLINE_TABLE, KEY_CODE, code)
+            df = pd.read_sql_query(sql, engine)
+            if df is not None:
+                dates = df[KEY_DATE].get_values()
+            else:
+                datas = []
+
             
             if not dates is None and len(dates) and not dates[0] is None:
                 maxDate = dates[0]
@@ -174,13 +186,15 @@ def download_all_stock_history_k_line():
     try:
 
         df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
-        codes = df[KEY_CODE].get_values()
+        codes = list(df[KEY_CODE].get_values())
         print 'total stocks:{0}'.format(len(codes))
         # for code in codes:
         #     download_stock_kline_to_sql(code)
 
+        codes = codes[::-1]
+
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-        pool = ThreadPool(processes=20)
+        pool = ThreadPool(processes=1)
         pool.map(download_stock_kline_to_sql, codes)
         pool.close()
         pool.join()
