@@ -17,9 +17,9 @@ DownloadDir = os.path.pardir + '/stockdata/' # os.path.pardir: 上级目录
 #     host_mysql = 'localhost'
 # else:
 #     host_mysql = '101.200.183.216'
-host_mysql = 'rdsw5ilfm0dpf8lee609.mysql.rds.aliyuncs.com'
-user_mysql = 'licj'
-pwd_mysql = 'AAaa1234'
+host_mysql = '127.0.0.1'
+user_mysql = 'admin'
+pwd_mysql = '1234'
 db_name_mysql = 'wealth_db'
 
 engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' % (user_mysql, pwd_mysql, host_mysql, db_name_mysql), connect_args={'charset':'utf8'})
