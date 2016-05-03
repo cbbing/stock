@@ -1,6 +1,9 @@
 #!/usr/local/bin/python
 #coding=utf-8
 # 趋势追踪策略
+"""
+http://t.cn/RqQv0JW
+"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
