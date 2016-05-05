@@ -212,8 +212,11 @@ def tread_track_live_trading(code, price_now, df=None):
 # df: 个股的K线数据
 def tread_track_backtest(code, df=None):
 
-    df = get_stock_k_line(code, date_start='2015-04-01', date_end='2016-04-30')
-    print df.head()
+    df = get_stock_k_line(code, date_start='2015-12-30', date_end='2016-05-05')
+    if len(df) == 0:
+        return None
+
+    print df.head(2)
     # 分析某个时间段的股票
     #dateS = datetime.datetime.today().date() + datetime.timedelta(-100)
     #date_start = dateS.strftime("%Y-%m-%d")
@@ -266,8 +269,8 @@ def tread_track_backtest(code, df=None):
                 #print i,ma_short[i]
 
     xticklabels = df['date'].apply(lambda x : str(x)).get_values()
-    print xticklabels[:5]
-    print xticklabels[-5:]
+    # print xticklabels[:5]
+    # print xticklabels[-5:]
 
     #plt.plot(df['date'].get_values(), ma_short.get_values(), label=code, color="r", linewidth=1)
     #plt.plot(df['date'].get_values(), ma_short.get_values(), color="r")
@@ -297,29 +300,20 @@ def tread_track_backtest(code, df=None):
 
         #plt.legend()
         plt.show()
-    
+
     min_index_pre = 0 #前一个极小值
     max_index_pre = 0 #前一个极大值
-    
-    # 止损位
-    keep_stop_price = 0 
-    keep_stop_index = 0
-    
-    # 止赢位
-    keep_win_price = 0 
-    keep_win_index = 0
 
     keep_stop_up_price = 0
     keep_stop_down_price = 0
 
-
-
     stockPos = StockPosition(50000, code)
     
     #for i in range(prama_ma_short+1, len(ma_short)-1):
-    for i in range(len(ma_short)-180, len(ma_short)-1):    
-        if i < 1:
-            return
+    for i in range(prama_ma_long-1, len(ma_short)-1):
+        # print prama_ma_long, len(ma_short)-1
+        # print ma_short[prama_ma_long]
+        # print ma_long[prama_ma_long]
 
         #滤波后的均线走平时（即处于滤波区间内），将其识别为一个点
         index_post = i+1
@@ -327,15 +321,20 @@ def tread_track_backtest(code, df=None):
             index_post += 1
             
         # 长均线保护策略:
-        bLongMA_forbid_buy = ma_short[i] < ma_long[i] # 买入保护
-        bLongMA_forbid_sale = not bLongMA_forbid_buy      # 卖出保护
+        # bLongMA_forbid_buy = ma_short[i] < ma_long[i] # 买入保护
+        # bLongMA_forbid_sale = not bLongMA_forbid_buy      # 卖出保护
+        #
+        # if bLongMA_forbid_buy and signal == SIGNAL_BUY:
+        #     signal = SIGNAL_SALE
+        #     stockPos.sale(close_price[i], str(df.ix[i, 'date']))
+        #     min_index_pre = 0
+        #     max_index_pre = 0
+        #     keep_stop_up_price = 0
+        #     keep_stop_down_price = 0
+        #     continue
+        # if bLongMA_forbid_buy and signal == SIGNAL_SALE:
+        #     continue
 
-        if bLongMA_forbid_buy and signal == SIGNAL_BUY:
-            signal = SIGNAL_SALE
-            stockPos.sale(close_price[i], str(df.ix[i, 'date']))
-            #print '卖出:', close_price[i], '  ', str(df.ix[i, 'date'])
-            continue
-        # if bLongMA_forbid_sale and signal == SIGNAL_SALE:
         #     if len(stockPos.transaction_records): # 有交易以后才考虑此情况
         #         signal = SIGNAL_BUY
         #         stockPos.buy(close_price[i], str(df.ix[i, 'date']))
@@ -351,12 +350,16 @@ def tread_track_backtest(code, df=None):
                 if signal == SIGNAL_BUY and ma_short[i] < ma_short[max_index_pre] - drift*(i-max_index_pre):
                     signal = SIGNAL_SALE
                     stockPos.sale(close_price[i], str(df.ix[i, 'date']))
-                    #print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+                    min_index_pre = 0
+                    max_index_pre = 0
+                    keep_stop_up_price = 0
+                    keep_stop_down_price = 0
                     continue
                 elif signal == SIGNAL_SALE and ma_short[i] > ma_short[max_index_pre] + drift*(i-max_index_pre):
                     signal = SIGNAL_BUY
                     stockPos.buy(close_price[i], str(df.ix[i, 'date']))
-                    #print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+                    keep_stop_up_price = 0
+                    keep_stop_down_price = 0
                     continue
                 
             max_index_pre = i
@@ -367,12 +370,16 @@ def tread_track_backtest(code, df=None):
                 if signal == SIGNAL_SALE and ma_short[i] > ma_short[min_index_pre] + drift*(i-min_index_pre):
                     signal = SIGNAL_BUY
                     stockPos.buy(close_price[i], str(df.ix[i, 'date']))
-                    #print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+                    keep_stop_up_price = 0
+                    keep_stop_down_price = 0
                     continue
                 elif signal == SIGNAL_BUY and ma_short[i] > ma_short[min_index_pre] - drift*(i-min_index_pre):
                     signal = SIGNAL_SALE
                     stockPos.sale(close_price[i], str(df.ix[i, 'date']))
-                    #print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+                    min_index_pre = 0
+                    max_index_pre = 0
+                    keep_stop_up_price = 0
+                    keep_stop_down_price = 0
                     continue
 
             min_index_pre = i
@@ -382,41 +389,48 @@ def tread_track_backtest(code, df=None):
         elif signal == SIGNAL_BUY and min_index_pre > 0 and ma_short[i] < ma_short[min_index_pre] - drift*(i-min_index_pre):
             signal = SIGNAL_SALE
             stockPos.sale(close_price[i], str(df.ix[i, 'date']))
-            #print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+            min_index_pre = 0
+            max_index_pre = 0
+            keep_stop_up_price = 0
+            keep_stop_down_price = 0
             continue
                 
         # <买入>如果滤波后的均线比前一个高点的向上漂移项高，则多头开仓或持有多头。
-        elif signal == SIGNAL_SALE and max_index_pre > 0 and \
-                ma_short[i] > ma_short[max_index_pre] + drift*(i-max_index_pre):    
+        elif signal == SIGNAL_SALE and max_index_pre > 0 and ma_short[i] > ma_short[max_index_pre] + drift*(i-max_index_pre):
             signal = SIGNAL_BUY
             stockPos.buy(close_price[i], str(df.ix[i, 'date']))
-            #print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+            keep_stop_up_price = 0
+            keep_stop_down_price = 0
             continue
 
         # 大波段保护策略
-        # 向上的大波段
-        if min_index_pre > 0 and ma_short[i] >= ma_short[min_index_pre] * (1 + param_big_band):
-            keep_stop_up_price = ma_short[i] * (1 - protect_big_band)  # 止盈位
-            keep_stop_up_index = i
+        ## 向上的大波段
+        if min_index_pre > 0 and close_price[i] >= ma_short[min_index_pre] * (1 + param_big_band):
+            if close_price[i] * (1 - protect_big_band) > keep_stop_up_price:
+                keep_stop_up_price = close_price[i] * (1 - protect_big_band)  # 止盈位
+                keep_stop_up_index = i
         if signal == SIGNAL_BUY and keep_stop_up_price > 0 and \
-                 ma_short[i] < keep_stop_up_price + drift*(i-keep_stop_up_index):
+                 close_price[i] < keep_stop_up_price + drift*(i-keep_stop_up_index):
             signal = SIGNAL_SALE
-            keep_stop_up_price = 0
             stockPos.sale(close_price[i], str(df.ix[i, 'date']))
-            #print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
+            min_index_pre = 0
+            max_index_pre = 0
+            keep_stop_up_price = 0
+            keep_stop_down_price = 0
             continue
         
-        # 向下的大波段
-
-        if max_index_pre > 0 and ma_short[i] <= ma_short[max_index_pre] * (1 - param_big_band):
-            keep_stop_down_price = ma_short[i] * (1 + protect_big_band)  # 止损位
-            keep_stop_down_index = i
+        ## 向下的大波段
+        if max_index_pre > 0 and close_price[i] <= ma_short[max_index_pre] * (1 - param_big_band):
+            if keep_stop_down_price == 0 or close_price[i] * (1 + protect_big_band) < keep_stop_down_price:
+                keep_stop_down_price = close_price[i] * (1 + protect_big_band)  # 止损位
+                keep_stop_down_index = i
         if signal == SIGNAL_SALE and keep_stop_down_price > 0 and \
-                        ma_short[i] > keep_stop_down_price + drift * (i + keep_stop_down_index):
+                        close_price[i] > keep_stop_down_price + drift * (i + keep_stop_down_index):
+
             signal = SIGNAL_BUY
+            keep_stop_up_price = 0
             keep_stop_down_price = 0
             stockPos.buy(close_price[i], str(df.ix[i, 'date']))
-            # print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
             continue
 
     stockPos.current_price = close_price[-1]
@@ -499,15 +513,15 @@ if __name__ == "__main__":
     #     tread_track_live_trading(list_stock[index], df.iloc[index]['price'])
 
 
-    # import tushare as ts
-    # df = ts.get_hs300s()
-    # print df.head()
-    # stockPoss = [tread_track_backtest(code) for code in df['code'].get_values()]
-    # for stockPos in stockPoss:
-    #     if stockPos:
-    #         stockPos.summary()
+    import tushare as ts
+    df = ts.get_hs300s()
+    print df.head()
+    stockPoss = [tread_track_backtest(code) for code in df['code'].get_values()[:50]]
+    for stockPos in stockPoss:
+        if stockPos:
+            stockPos.summary()
 
-    tread_track_backtest('000629')
+    # tread_track_backtest('000027')
     
     
     
