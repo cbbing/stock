@@ -212,8 +212,8 @@ def tread_track_live_trading(code, price_now, df=None):
 # df: 个股的K线数据
 def tread_track_backtest(code, df=None):
 
-    df = get_stock_k_line(code)
-    
+    df = get_stock_k_line(code, date_start='2015-04-01', date_end='2016-04-30')
+    print df.head()
     # 分析某个时间段的股票
     #dateS = datetime.datetime.today().date() + datetime.timedelta(-100)
     #date_start = dateS.strftime("%Y-%m-%d")
@@ -236,11 +236,11 @@ def tread_track_backtest(code, df=None):
         
     print '交易开始'
     
-    plt.figure(figsize=(16,8))
+    #plt.figure(figsize=(16,8))
     #plt.plot(range(len(ma_short)), ma_short.get_values(), label=code, color="b", linewidth=1)
     
-    plt.xlabel("Time")
-    plt.ylabel("Price")
+    # plt.xlabel("Time")
+    # plt.ylabel("Price")
     
     
         
@@ -264,31 +264,39 @@ def tread_track_backtest(code, df=None):
                     ma_short[i] < ma_short[extreIndex]*(1+filter_range):
                 ma_short[i] = ma_short[extreIndex]
                 #print i,ma_short[i]
-    
-    #plt.plot(df.index, ma_short.get_values(), label=code, color="r", linewidth=1)
 
-    # trick to get the axes
-    fig,ax = plt.subplots()
+    xticklabels = df['date'].apply(lambda x : str(x)).get_values()
+    print xticklabels[:5]
+    print xticklabels[-5:]
 
-    xValues = close_price[-200:]
-    ax.plot(xValues, label=code, color="r", linewidth=1)
-    zValues = cwavelet.getWaveletData(xValues, 'db2', 2, 'sqtwolog')
-    zxValue = np.arange(0,len(zValues),1)
-    #plt.figure(figsize=(16,8))
+    plt.plot(df['date'].get_values(), ma_short.get_values(), label=code, color="r", linewidth=1)
+    plt.plot(df['date'].get_values(), ma_short.get_values(), "c")
 
-    ax.plot(zxValue, zValues, color="b", linewidth=2)
-    ax.grid()
+    def wavlet_plt():
+        # trick to get the axes
+        fig,ax = plt.subplots()
 
-    # make ticks and tick labels
-    xticks=range(0, len(xValues)+1,10)
-    xticklabels=['2000-01-0'+str(n) for n in range(1,len(xValues)+1)]
+        xValues = close_price[-200:]
+        ax.plot(xValues, label=code, color="r", linewidth=1)
+        zValues = cwavelet.getWaveletData(xValues, 'db2', 2, 'sqtwolog')
+        zxValue = np.arange(0,len(zValues),1)
+        #plt.figure(figsize=(16,8))
 
-    # set ticks and tick labels
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels,rotation=15)
+        ax.plot(zxValue, zValues, color="b", linewidth=2)
+        ax.grid()
 
-    #plt.legend()
-    plt.show()
+        # make ticks and tick labels
+        xticks=range(0, len(xValues)+1,10)
+        #xticklabels=['2000-01-0'+str(n) for n in range(1,len(xValues)+1)]
+        xticklabels = df['date'].apply(lambda x : str(x)).get_values()
+
+
+        # set ticks and tick labels
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xticklabels,rotation=15)
+
+        #plt.legend()
+        plt.show()
 
     # 交易次数    count_sale = 0
     count_buy = 0
@@ -338,7 +346,7 @@ def tread_track_backtest(code, df=None):
             #print '极大值:', ma_short[i], 'pos:', i
             if bLongMA_protect_close and max_index_pre > 0 and ma_short[i] < ma_short[max_index_pre] + drift*(i-max_index_pre) and signal == SIGNAL_BUY:
                 signal = SIGNAL_SALE
-                print '卖出:', close_price[i], 'pos:', i
+                print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
                 #count_sale += 1
                 total += close_price[i] - price_buy
                 
@@ -350,7 +358,7 @@ def tread_track_backtest(code, df=None):
             #print '极小值:', ma_short[i], 'pos:', i
             if bLongMA_protect_close and min_index_pre > 0 and ma_short[i] > ma_short[min_index_pre] + drift*(i-min_index_pre)  and signal == SIGNAL_SALE:
                 signal = SIGNAL_BUY
-                print '买入:', close_price[i], 'pos:', i
+                print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
                 count_buy += 1
                 price_buy = close_price[i]
                 if price_init == 0:
@@ -365,7 +373,7 @@ def tread_track_backtest(code, df=None):
         elif bLongMA_protect_close and signal == SIGNAL_BUY and min_index_pre > 0 and \
                 ma_short[i] < ma_short[min_index_pre] + drift*(i-min_index_pre):
             signal = SIGNAL_SALE
-            print '卖出:', close_price[i], 'pos:', i
+            print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
             #count_sale += 1
             total += close_price[i] - price_buy
             
@@ -376,7 +384,7 @@ def tread_track_backtest(code, df=None):
         elif bLongMA_protect_close and signal == SIGNAL_SALE and max_index_pre > 0 and \
                 ma_short[i] > ma_short[max_index_pre] + drift*(i-max_index_pre):    
             signal = SIGNAL_BUY
-            print '买入:', close_price[i], 'pos:', i
+            print '买入:', close_price[i], 'pos:', str(df.ix[i, 'date'])
             count_buy += 1
             price_buy = close_price[i]
             
@@ -390,7 +398,7 @@ def tread_track_backtest(code, df=None):
         elif bLongMA_protect_close and signal == SIGNAL_BUY and keep_stop_price > 0 and \
                  ma_short[i] < keep_stop_price + drift*(i-keep_stop_index):    
             signal = SIGNAL_SALE
-            print '卖出:', close_price[i], 'pos:', i
+            print '卖出:', close_price[i], 'pos:', str(df.ix[i, 'date'])
             #count_sale += 1
             total += close_price[i] - price_buy
             

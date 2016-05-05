@@ -77,7 +77,8 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
                 date_start = se[KEY_TimeToMarket]
                 date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
                 date_start = date.strftime('%Y-%m-%d')
-        date_end = date_end.strftime('%Y-%m-%d')
+        if isinstance(date_end, datetime.date):
+            date_end = date_end.strftime('%Y-%m-%d')
 
         if date_start >= date_end:
             print 'Code:{0} is updated to {1}'.format(code, date_start)
@@ -107,10 +108,10 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
 # 下载源选择
 def download_kline_source_select(code, date_start, date_end):
     try:
-        #df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+        df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
 
         #if df_qfq is None:
-        df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
+        #df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
         df_qfq = df_qfq[::-1]
         df_qfq[KEY_CODE] = code
         df_qfq[KEY_DATE] = df_qfq.index
@@ -208,7 +209,7 @@ if __name__ == '__main__':
     download_stock_basic_info()
     download_all_stock_history_k_line()
     #calcute_ma_all()
-    #download_stock_kline_to_sql('000001')
+    #download_stock_kline_to_sql('000002', date_start='1991-01-29',date_end='2012-12-16')
     
     #convertRedisToSqlite()
 
