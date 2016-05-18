@@ -114,7 +114,7 @@ def download_kline_source_select(code, date_start, date_end):
 
         #if df_qfq is None:
         #df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
-        df_qfq = df_qfq[::-1]
+        # df_qfq = df_qfq[::-1]
         df_qfq[KEY_CODE] = code
         df_qfq[KEY_DATE] = df_qfq.index
 
@@ -206,7 +206,7 @@ def download_all_stock_history_k_line():
  
     
 if __name__ == '__main__':
-    # download_stock_basic_info()
+    download_stock_basic_info()
     download_all_stock_history_k_line()
     #calcute_ma_all()
     #download_stock_kline_to_sql('000002', date_start='1991-01-29',date_end='2012-12-16')
