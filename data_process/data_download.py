@@ -54,29 +54,24 @@ def download_stock_basic_info():
 
 
 # 下载单只股票到数据库
-def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.today()):
+def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime.now()):
     
     try:
         # 设置日期范围
         if date_start == '':
-
+            # 取数据库最近的时间
             sql = "select MAX({0}) as {0} from {1} where {2}='{3}'".format(KEY_DATE, STOCK_KLINE_TABLE, KEY_CODE, code)
             df = pd.read_sql_query(sql, engine)
-            if df is not None:
-                dates = df[KEY_DATE].get_values()
+            if df is not None and  df.ix[0, KEY_DATE] is not None:
+                date_start = df.ix[0, KEY_DATE]
+                date_start = datetime.datetime.strptime(str(date_start), "%Y-%m-%d") + datetime.timedelta(1)
+                date_start = date_start.strftime('%Y-%m-%d')
             else:
-                datas = []
-
-            
-            if not dates is None and len(dates) and not dates[0] is None:
-                maxDate = dates[0]
-                maxDate = datetime.datetime.strptime(str(maxDate), "%Y-%m-%d") + datetime.timedelta(1)
-                date_start = maxDate.strftime('%Y-%m-%d')
-            else:
-                se = get_stock_info(code) 
+                se = get_stock_info(code)
                 date_start = se[KEY_TimeToMarket]
-                date = datetime.datetime.strptime(str(date_start), "%Y%m%d")
-                date_start = date.strftime('%Y-%m-%d')
+                date_start = datetime.datetime.strptime(str(date_start), "%Y%m%d")
+                date_start = date_start.strftime('%Y-%m-%d')
+
         if isinstance(date_end, datetime.date):
             date_end = date_end.strftime('%Y-%m-%d')
 
@@ -85,19 +80,26 @@ def download_stock_kline_to_sql(code, date_start='', date_end=datetime.date.toda
             return
 
         # 开始下载
-        print 'download ' + str(code) + ' k-line >>>begin (', date_start+u' 到 '+date_end+')'
-        
-        df_qfq = download_kline_source_select(code, date_start, date_end)
-        
-        if df_qfq is None:
-            return None
-        print df_qfq[-10:]
-        
-        print 'choose  mysql'
-        df_qfq.to_sql(STOCK_KLINE_TABLE, engine,if_exists='append', index=False)
-        
-        print '\ndownload ' + code +  ' k-line to mysql finish'
-            
+        # 日期分隔成一年以内
+        dates = pd.date_range(date_start, date_end)
+        df = pd.DataFrame(dates, columns=['date'])
+        df['year'] = df['date'].apply(lambda x : x.year)
+        print df.head()
+
+        years = list(set(df['year'].get_values()))
+        years.sort()
+
+        for year in years:
+            df1 = df[df['year']==year]
+            if len(df) >= 2:
+                date_s = str(df1['date'].get_values()[0])
+                date_e = str(df1['date'].get_values()[-1])
+                date_s = date_s[:10]
+                date_e = date_e[:10]
+            print 'download ' + str(code) + ' k-line >>>begin (', date_s + u' 到 ' + date_e + ')'
+            df_qfq = download_kline_source_select(code, date_s, date_e)
+            df_qfq.to_sql(STOCK_KLINE_TABLE, engine, if_exists='append', index=False)
+            print '\ndownload {} k-line to mysql finish ({}-{})'.format(code, date_s, date_e)
         
     except Exception as e:
         print str(e)        
@@ -120,9 +122,7 @@ def download_kline_source_select(code, date_start, date_end):
         columns = [KEY_CODE, KEY_DATE, KEY_OPEN, KEY_HIGH, KEY_CLOSE, KEY_LOW, KEY_VOLUME]
         df_qfq = df_qfq[columns]
 
-
-
-        print df_qfq[-5:]
+        print df_qfq.head()
 
         return df_qfq
     except Exception as e:
@@ -192,11 +192,11 @@ def download_all_stock_history_k_line():
         # for code in codes:
         #     download_stock_kline_to_sql(code)
 
-        codes = codes[::-1]
+
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
         pool = ThreadPool(processes=1)
-        pool.map(download_stock_kline_to_sql, codes)
+        pool.map(download_stock_kline_by_code, codes)
         pool.close()
         pool.join()
 
@@ -206,7 +206,7 @@ def download_all_stock_history_k_line():
  
     
 if __name__ == '__main__':
-    download_stock_basic_info()
+    # download_stock_basic_info()
     download_all_stock_history_k_line()
     #calcute_ma_all()
     #download_stock_kline_to_sql('000002', date_start='1991-01-29',date_end='2012-12-16')
