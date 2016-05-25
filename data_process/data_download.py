@@ -98,8 +98,9 @@ def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime
                 date_e = date_e[:10]
             print 'download ' + str(code) + ' k-line >>>begin (', date_s + u' 到 ' + date_e + ')'
             df_qfq = download_kline_source_select(code, date_s, date_e)
-            df_qfq.to_sql(STOCK_KLINE_TABLE, engine, if_exists='append', index=False)
-            print '\ndownload {} k-line to mysql finish ({}-{})'.format(code, date_s, date_e)
+            if df_qfq:
+                df_qfq.to_sql(STOCK_KLINE_TABLE, engine, if_exists='append', index=False)
+                print '\ndownload {} k-line to mysql finish ({}-{})'.format(code, date_s, date_e)
         
     except Exception as e:
         print str(e)        
@@ -192,6 +193,8 @@ def download_all_stock_history_k_line():
         # for code in codes:
         #     download_stock_kline_to_sql(code)
 
+        if 'sh' in codes:
+            codes = ['sh']
 
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
@@ -206,7 +209,7 @@ def download_all_stock_history_k_line():
  
     
 if __name__ == '__main__':
-    download_stock_basic_info()
+    # download_stock_basic_info()
     download_all_stock_history_k_line()
     #calcute_ma_all()
     #download_stock_kline_to_sql('000002', date_start='1991-01-29',date_end='2012-12-16')
