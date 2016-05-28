@@ -33,20 +33,26 @@ def download_stock_basic_info():
         df = df[[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket]]
 
         print df.columns
-        print df[:10]
+        print df.head()
 
-        df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='replace', index=False)
+        sql = 'select code from {}'.format(STOCK_BASIC_TABLE)
+        df_code = pd.read_sql(sql, engine)
+        df = df[df['code'].apply(lambda x : not x in df_code['code'].get_values())]
+        print df.head()
+        print len(df)
+        if len(df):
+            df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='append', index=False)
 
         # 添加指数
-        indexs = [('sh', '上证指数', '指数','全国','19910715'),
-                  ('sz', '深圳成指', '指数','全国','19940720'),
-                  ('hs300', '沪深300指数', '指数','全国','20050408'),
-                  ('sz50', '上证50指数', '指数','全国','20040102'),
-                  ('zxb', '中小板指数', '指数','全国','20050607'),
-                  ('cyb', '创业板指数', '指数','全国','20100531'),]
-        df = pd.DataFrame(indexs, columns=[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket])
-        print df
-        df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='append', index=False)
+        # indexs = [('sh', '上证指数', '指数','全国','19910715'),
+        #           ('sz', '深圳成指', '指数','全国','19940720'),
+        #           ('hs300', '沪深300指数', '指数','全国','20050408'),
+        #           ('sz50', '上证50指数', '指数','全国','20040102'),
+        #           ('zxb', '中小板指数', '指数','全国','20050607'),
+        #           ('cyb', '创业板指数', '指数','全国','20100531'),]
+        # df = pd.DataFrame(indexs, columns=[KEY_CODE,KEY_NAME, KEY_INDUSTRY, KEY_AREA, KEY_TimeToMarket])
+        # print df
+        # df.to_sql(STOCK_BASIC_TABLE, engine, if_exists='append', index=False)
 
            
     except Exception as e:
@@ -98,7 +104,7 @@ def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime
                 date_e = date_e[:10]
             print 'download ' + str(code) + ' k-line >>>begin (', date_s + u' 到 ' + date_e + ')'
             df_qfq = download_kline_source_select(code, date_s, date_e)
-            if df_qfq:
+            if len(df_qfq):
                 df_qfq.to_sql(STOCK_KLINE_TABLE, engine, if_exists='append', index=False)
                 print '\ndownload {} k-line to mysql finish ({}-{})'.format(code, date_s, date_e)
         
@@ -199,9 +205,10 @@ def download_all_stock_history_k_line():
         print 'total stocks:{0}'.format(len(codes))
         # for code in codes:
         #     download_stock_kline_to_sql(code)
+        codes = codes[::-1]
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-        pool = ThreadPool(processes=1)
+        pool = ThreadPool(processes=10)
         pool.map(download_stock_kline_by_code, codes)
         pool.close()
         pool.join()

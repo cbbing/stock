@@ -466,6 +466,7 @@ class StockPosition():
         self.stock_count = count
         self.transaction_records[buy_date] = ('BUY', price, count)
         print buy_date, 'BUY', price, count
+        a = 0
 
     def sale(self, price, sale_date, sale_ratio=1.0):
         """
@@ -500,6 +501,7 @@ class StockPosition():
         out1 = '交易次数:{}'.format(len(self.transaction_records))
         out2 = "收益率：{}%".format((cash_now - self.init_cash) / self.init_cash * 100)
         print self.code, out1, out2
+        return (cash_now - self.init_cash) / self.init_cash * 100, len(self.transaction_records)
 
 if __name__ == "__main__":
     list_stock = ['600011','002600','002505','000725','000783','600048','300315','002167','601001']
@@ -513,15 +515,21 @@ if __name__ == "__main__":
     #     tread_track_live_trading(list_stock[index], df.iloc[index]['price'])
 
 
-    import tushare as ts
-    df = ts.get_hs300s()
-    print df.head()
-    stockPoss = [tread_track_backtest(code) for code in df['code'].get_values()[:50]]
-    for stockPos in stockPoss:
-        if stockPos:
-            stockPos.summary()
+    # import tushare as ts
+    # df = ts.get_hs300s()
+    # print df.head()
+    # stockPoss = [tread_track_backtest(code) for code in df['code'].get_values()[::]]
+    #
+    # result_list = list()
+    # for stockPos in stockPoss:
+    #     if stockPos:
+    #         r1, r2 = stockPos.summary()
+    #         result_list.append((stockPos.code, r2, r1))
+    # result_list = sorted(result_list, key = lambda x : x[2])
+    # print result_list[0]
+    # print result_list[-1]
 
-    # tread_track_backtest('000027')
+    tread_track_backtest('002236')
     
     
     
