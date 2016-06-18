@@ -106,26 +106,28 @@ def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime
             df_qfq = download_kline_source_select(code, date_s, date_e)
             if len(df_qfq):
                 df_qfq.to_sql(STOCK_KLINE_TABLE, engine, if_exists='append', index=False)
-                print '\ndownload {} k-line to mysql finish ({}-{})'.format(code, date_s, date_e)
-        
+                print '\ndownload {} k-line to mysql finish ({} to {})'.format(code, date_s, date_e)
+            else:
+                return 'fail... , and try again'
+
     except Exception as e:
         print str(e)        
     
         
-    return None
+    # return None
 
 # 下载源选择
 def download_kline_source_select(code, date_start, date_end):
     try:
         if len(code)==6:
             df_qfq = ts.get_h_data(str(code), start=date_start, end=date_end) # 前复权
+            df_hfq = ts.get_h_data(str(code), start=date_start, end=date_end, autype='hfq')  # 后复权
         else:
             # import pandas.io.data as web
             # price = web.get_data_yahoo('000001.SS', '1991-07-15')
-
             df_qfq = ts.get_hist_data(str(code), start=date_start, end=date_end)
-        if len(df_qfq)==0:
-            return None
+        if len(df_qfq)==0 or len(df_hfq)==0:
+            return pd.DataFrame()
         #if df_qfq is None:
         #df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
         # df_qfq = df_qfq[::-1]
@@ -136,11 +138,15 @@ def download_kline_source_select(code, date_start, date_end):
         columns = [KEY_CODE, KEY_DATE, KEY_OPEN, KEY_HIGH, KEY_CLOSE, KEY_LOW, KEY_VOLUME]
         df_qfq = df_qfq[columns]
 
+        if len(code)==6:
+            df_qfq['close_hfq'] = df_hfq['close']
+
         print df_qfq.head()
 
         return df_qfq
     except Exception as e:
         print str(e)
+        return pd.DataFrame()
         
 # 下载股票的历史分笔数据
 # code:股票代码
@@ -204,8 +210,8 @@ def download_all_stock_history_k_line():
         codes = list(df[KEY_CODE].get_values())
         print 'total stocks:{0}'.format(len(codes))
         # for code in codes:
-        #     download_stock_kline_to_sql(code)
-        codes = codes[::-1]
+        #     download_stock_kline_by_code(code)
+        # codes = codes[::-1]
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
         pool = ThreadPool(processes=10)
