@@ -5,6 +5,7 @@
 
 import pandas as pd
 import numpy as np
+from data_process.data_calcute import calcute_ma
 
 from init import *
 
@@ -19,7 +20,11 @@ class MAStrategy:
 
         #方式二
         # 将数据按照交易日期从远到近排序
-        df.sort_values(by='date', inplace=True)
+        df.sort(columns='date', inplace=True)
+
+        df = calcute_ma(df, AVR_SHORT, AVR_LONG)
+
+        # print df.tail()
         self.close_price = df['close'].get_values()
 
         self.close_price = np.append(self.close_price, float(stockData.current))

@@ -70,7 +70,7 @@ def main():
     infoLogger.logger.info(encode_wrap('卖出'))
     str_all = '\n\n\n' + str_all + '卖出\n'
     for stock in stock_sale_list:
-        if stock.code in stock_list:
+        # if stock.code in stock_list:
             infoLogger.logger.info('Sale now! ' + stock.str_print())
             #print '>' * 3, 'Sale now!', encode_wrap(stock.name), stock.code, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             str_all = str_all + stock.str_print() + '\n'
