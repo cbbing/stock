@@ -126,7 +126,7 @@ def download_kline_source_select(code, date_start, date_end):
             # import pandas.io.data as web
             # price = web.get_data_yahoo('000001.SS', '1991-07-15')
             df_qfq = ts.get_hist_data(str(code), start=date_start, end=date_end)
-        if len(df_qfq)==0 or len(df_hfq)==0:
+        if len(df_qfq)==0 or (len(code)==6 and len(df_hfq)==0):
             return pd.DataFrame()
         #if df_qfq is None:
         #df_qfq = ts.get_hist_data(code, start=date_start, end=date_end)
@@ -211,7 +211,7 @@ def download_all_stock_history_k_line():
         print 'total stocks:{0}'.format(len(codes))
         # for code in codes:
         #     download_stock_kline_by_code(code)
-        # codes = codes[::-1]
+        codes = codes[::-1]
 
         #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
         pool = ThreadPool(processes=10)
