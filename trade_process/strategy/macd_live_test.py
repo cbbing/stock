@@ -79,11 +79,11 @@ class MAStrategy:
         #EMA 
         ma_list = [self.AVR_SHORT, self.AVR_LONG]
         if ma_list[0] == self.AVR_SHORT and ma_list[1] == self.AVR_LONG:
-            ema_close_short = self.ema_short
-            ema_close_long = self.ema_long
+            ema_close_short = self.ma_short
+            ema_close_long = self.ma_long
         else:     
-            ema_close_short = pd.ewma(self.close_price, span=ma_list[0])
-            ema_close_long = pd.ewma(self.close_price, span=ma_list[1])
+            ema_close_short = pd.rolling_mean(self.close_price, ma_list[0])
+            ema_close_long = pd.rolling_mean(self.close_price, ma_list[1])
         
         
         signal = SIGNAL_DEFAULT
