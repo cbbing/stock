@@ -14,7 +14,7 @@ import ctypes
 from ConfigParser import ConfigParser
 
 import data_process.online_data as OnlineData
-import trade_process.strategy.macd_live_test as MACD_LIVE_TEST
+from trade_process.strategy.macd_live_test import MAStrategy
 from util.stockutil import fn_timer as fn_timer_
 from data_process.data_get import *
 from data_process.Stock import Stock
@@ -139,7 +139,7 @@ def live_single_stock(stock):
         threshold_buy = cf.get('trade_threshold', 'Threshold_Buy_Count')
         threshold_sale = cf.get('trade_threshold', 'Threshold_Sale_Count')
 
-        maStrategy = MACD_LIVE_TEST.MAStrategy(stockData = stock, df=df)
+        maStrategy = MAStrategy(stockData = stock, df=df)
         signal = maStrategy.select_Time_Mix(int(threshold_buy), int(threshold_sale))
         # if signal > 0:
         #     print '>' * 5, 'Buy now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
