@@ -127,29 +127,21 @@ def _calcute_ma_lastest(code):
 @wrapcache.wrapcache(timeout=6*60*60)
 def calcute_ma(df, avr_short=12, avr_long=40):
     """
-    计算实时的ma
+    计算ma, ema
     :param df:
     :return:
     """
     if len(df) == 0:
         return
 
-    close_prices = df['close'].get_values()
-
     print "{} calcute ma".format(df.ix[0,'code'])
-    ma_short = pd.rolling_mean(close_prices, avr_short)  # 12
-    ma_long = pd.rolling_mean(close_prices, avr_long)  # 40
+    df['ma_' + str(avr_short)] = pd.rolling_mean(df['close'], avr_short)  # 12
+    df['ma_' + str(avr_long)] = pd.rolling_mean(df['close'], avr_long)  # 40
 
-    df['ma_' + str(avr_short)] = ma_short
-    df['ma_' + str(avr_long)] = ma_long
 
     print "{} calcute ema".format(df.ix[0, 'code'])
-
-    ema_short = pd.ewma(close_prices, span=avr_short)  # 12
-    ema_long = pd.ewma(close_prices, span=avr_long)  # 40
-
-    df['ema_' + str(avr_short)] = ema_short
-    df['ema_' + str(avr_long)] = ema_long
+    df['ema_' + str(avr_short)] = pd.ewma(df['close'], span=avr_short)  # 12
+    df['ema_' + str(avr_long)] = pd.ewma(df['close'], span=avr_long)  # 40
 
     df = df.replace(np.nan, 0)
     return df

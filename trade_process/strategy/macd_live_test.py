@@ -8,30 +8,40 @@ import numpy as np
 from data_process.data_calcute import calcute_ma
 
 from init import *
+from util.codeConvert import GetNowDate
 
 
 class MAStrategy:
     
     # df: DataFrame    
-    def __init__(self, stockData='', df=''):
+    def __init__(self, code, trade, df_close):
+        """
+        :param code:  股票代码
+        :param trade:  实时股价, float
+        :param df_close: 收盘价序列,已排序, columns=['date', 'close']
+        """
         
         self.AVR_SHORT = AVR_SHORT
         self.AVR_LONG = AVR_LONG
 
         #方式二
         # 将数据按照交易日期从远到近排序
-        df.sort(columns='date', inplace=True)
+        # df.sort(columns='date', inplace=True)
 
-        df = calcute_ma(df, AVR_SHORT, AVR_LONG)
+        self.df_close = calcute_ma(df_close, AVR_SHORT, AVR_LONG)
 
-        # print df.tail()
-        self.close_price = df['close'].get_values()
+        if trade: #有实时股价
+            df_now = df_close.tail(1)
+            df_now['date'] = GetNowDate()
+            df_now['close'] = trade
+            self.df_close = pd.concat([self.df_close, df_now], ignore_index=True)
+            print self.df_close.tail()
 
-        self.close_price = np.append(self.close_price, float(stockData.current))
+        #计算当前日期的ma
+        lastest_ma_short = sum(self.df_close['close'][-self.AVR_SHORT:])/self.AVR_SHORT
+        lastest_ma_long = sum(self.df_close['close'][-self.AVR_LONG:])/self.AVR_LONG
 
-        #计算当前的ma
-        lastest_ma_short = sum(self.close_price[-self.AVR_SHORT:])/self.AVR_SHORT;
-        lastest_ma_long = sum(self.close_price[-self.AVR_LONG:])/self.AVR_LONG;
+        self.df_close['ma_' + str(self.AVR_SHORT)]
 
         self.ma_short = np.append(df['ma_%d' % self.AVR_SHORT].get_values(), lastest_ma_short)
         self.ma_long = np.append(df['ma_%d' % self.AVR_LONG].get_values(), lastest_ma_long)
