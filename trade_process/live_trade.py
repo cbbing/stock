@@ -139,7 +139,7 @@ def live_single_stock(stock):
         threshold_buy = cf.get('trade_threshold', 'Threshold_Buy_Count')
         threshold_sale = cf.get('trade_threshold', 'Threshold_Sale_Count')
 
-        maStrategy = MAStrategy(stockData = stock, df=df)
+        maStrategy = MAStrategy(code=stock.code,  trade= stock.current, df_close=df)
         signal = maStrategy.select_Time_Mix(int(threshold_buy), int(threshold_sale))
         # if signal > 0:
         #     print '>' * 5, 'Buy now!', stock.name, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
