@@ -3,13 +3,15 @@
 
 import sys
 import platform
+from apscheduler.schedulers.blocking import BlockingScheduler
+import logging
+logging.basicConfig()
 
 if platform.system() == 'Windows':
     sys.path.append('../')
 else:
     sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
 
-import sched
 import ctypes
 from ConfigParser import ConfigParser
 
@@ -153,57 +155,12 @@ def live_single_stock(stock):
         return stock
     
 
-##  Styles:
-##  0 : OK
-##  1 : OK | Cancel
-##  2 : Abort | Retry | Ignore
-##  3 : Yes | No | Cancel
-##  4 : Yes | No
-##  5 : Retry | No 
-##  6 : Cancel | Try Again | Continue
-def Mbox(title, text, style):
-    ctypes.windll.user32.MessageBoxA(0, text, title, style)
-    
-
-#初始化sched模块的scheduler类
-#第一个参数是一个可以返回时间戳的函数，第二个参数可以在定时未到达之前阻塞。
-s = sched.scheduler(time.time,time.sleep)
-
-#被周期性调度触发的函数
-
-def event_func():
-
-    infoLogger.logger.info( 'Cycle Start >>>  ' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-    #print 'Cycle Start', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    #交易时间
-    trade_time = range(930, 1500)
-    trade_break = range(1130, 1300)
-    now_time = int(time.strftime('%H%M', time.localtime(time.time())))
-    if now_time in trade_time and not now_time in trade_break:
-        main()
-    elif now_time > 1500:
-        infoLogger.logger.info(encode_wrap('交易时间结束'))
-        sys.exit(0)
-    else:
-        print encode_wrap('休市中...')
-        #sys.exit(0)
-        time.sleep(60)
-    #print 'Cycle End', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    infoLogger.logger.info( 'Cycle End >>>  ' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-    print '\n\n'
-
-    
-#enter四个参数分别为：间隔事件、优先级（用于同时间到达的两个事件同时执行时定序）、被调用触发的函数，给他的参数（注意：一定要以tuple给如，如果只有一个参数就(xx,)）
-def perform(inc):
-    s.enter(inc,0,perform,(inc,))
-    event_func()
-    
-def mymain(inc=60*5):
-    s.enter(0,0,perform,(inc,))
-    s.run()
    
  
 if __name__ == "__main__":
     print ">>live trade begin"
-    mymain()
+
+    sched = BlockingScheduler()
+    sched.add_job(main, 'cron', day_of_week='0-4', hour='9-11,13-15')
+
     print ">>live trade end"

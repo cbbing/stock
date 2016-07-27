@@ -326,3 +326,6 @@ def get_realtime_price(symbol):
         return df_s['trade'].get_values()[0]
     else:
         return -1
+
+def get_my_position():
+    sql = ''
