@@ -21,10 +21,10 @@ from util.stockutil import fn_timer as fn_timer_
 from data_process.data_get import *
 from data_process.Stock import Stock
 import util.stockutil as util
-from util.codeConvert import *
+from util.codeConvert import GetNowTime
 from util.send_mail import send_email_163
 from init import *
-
+from strategy.stop_loss import stop_loss_by_price
 
 
 
@@ -37,32 +37,39 @@ from init import *
 
 def main():
 
+    #获取实时股价
+    try:
+        stockList = OnlineData.getAllChinaStock()
+    except Exception, e:
+        errorLogger.logger.error(encode_wrap('获取实时估价失败!  ') + str(e))
+        return
+
+    #止盈止损判断
+    judgements = stop_loss_by_price()
+    if judgements:
+        for judgement in judgements:
+            infoLogger.logger.info(encode_wrap('卖出:{}'.format(judgement[0])))
+
+
     cf = ConfigParser()
     cf.read(config_file_path)
     threshold_buy = cf.get('trade_threshold', 'Threshold_Buy_Count')
     threshold_sale = cf.get('trade_threshold', 'Threshold_Sale_Count')
     infoLogger.logger.info(encode_wrap('阈值: Buy(%s) ,Sale(%s)' %(threshold_buy, threshold_sale)))
 
-    try:
-        stockClassList =OnlineData.getAllChinaStock()
-    except Exception,e:
-        errorLogger.logger.error(encode_wrap('获取实时估价失败!  ') + str(e))
-        return
-
     # 监听股票列表
     stock_list = ['600000','600048', '600011', '002600', '002505', '000725', '000783', '300315', '002167', '601001',\
               '600893', '000020', '600111']
 
-    print '>'*5, 'Calcute ...'
-    stock_buy_list, stock_sale_list = live_mult_stock(stockClassList)
+    print '>>>>>Calcute ...'
+    stock_buy_list, stock_sale_list = live_mult_stock(stockList)
     if len(stock_buy_list) == 0 and len([stock for stock in stock_sale_list if stock.code in stock_list]) == 0:
         infoLogger.logger.info(encode_wrap('没有合适的买卖机会，请耐心等待'))
         return
 
-    str_all =time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    str_all = str_all + '\n\n\n买入\n'
-    #print encode_wrap('买入:')
-    infoLogger.logger.info(encode_wrap('买入'))
+    str_all = '{}\n\n\n买入\n'.format(GetNowTime())
+
+    infoLogger.logger.info(encode_wrap('{}\n\n买入'.format(GetNowTime())))
     for stock in stock_buy_list:
         infoLogger.logger.info('Buy now! ' + stock.str_print())
         str_all = str_all + stock.str_print() + '\n'
@@ -77,30 +84,8 @@ def main():
             #print '>' * 3, 'Sale now!', encode_wrap(stock.name), stock.code, stock.current, (float(stock.current)-float(stock.close))/float(stock.close)*100, '%'
             str_all = str_all + stock.str_print() + '\n'
 
-    send_email_163(subject='均线趋势量化结果', content=str_all)
+    send_email_163(subject='MA Strategy Results', content=str_all)
 
-# 获取所有股票的实时股价   
-# @fn_timer_
-# def get_all_stock_current_price():
-#     if DB_WAY == 'redis':
-#         r = redis.Redis(host='127.0.0.1', port=6379)
-#         stockList = list(r.smembers(INDEX_STOCK_BASIC))
-#     elif DB_WAY == 'sqlite':
-#         engine = create_engine('sqlite:///..\stocks.db3')
-#         sql = 'select %s from %s' % (KEY_CODE, INDEX_STOCK_BASIC)
-#         df = pd.read_sql_query(sql, engine)
-#         stockList = df[KEY_CODE].get_values()
-#
-#     stockList_group = util.group_list(stockList, 20)
-#
-#     stockClassList = []
-#     for eachList in stockList_group:
-#         #print eachList
-#         eachClasses = OnlineData.getLiveMutliChinaStockPrice(eachList)
-#         if eachClasses != []:
-#             stockClassList.extend(eachClasses)
-#     print '交易股票总数：%d' % len(stockClassList)
-#     return stockClassList
 
 @fn_timer_        
 def live_mult_stock(stockClassList):  
@@ -159,8 +144,9 @@ def live_single_stock(stock):
  
 if __name__ == "__main__":
     print ">>live trade begin"
+    main()
 
     sched = BlockingScheduler()
-    sched.add_job(main, 'cron', day_of_week='0-4', hour='9-11,13-15')
+    sched.add_job(main, 'cron', day_of_week='0-4', hour='9-12,13-15', minute='*/5')
 
     print ">>live trade end"

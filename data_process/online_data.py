@@ -6,10 +6,13 @@ import re
 import Stock as st
 import tushare as ts
 import pandas as pd
+import time
+import wrapcache
+from retrying import retry
+
+from util.stockutil import fn_timer as fn_timer_
 import util.commons as cm
 import util.stockutil as util
-import time
-from util.stockutil import fn_timer as fn_timer_
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
@@ -83,24 +86,34 @@ def getLiveChinaStockPrice(stockCode):
 
 # 获取A股所有股票的实时股价
 # 通过 ts.get_today_all 获取
+@wrapcache.wrapcache(timeout=5*60)
+@retry(stop_max_attempt_number=10)
+def get_real_price_dataframe():
+    df = ts.get_today_all()
+    return df
+
 @fn_timer_
 def getAllChinaStock():
-    df = ts.get_today_all()
-    stockList = []
-    for se in df.get_values():
-        stock = st.Stock('')
-        stock.code = se[0]
-        stock.name = se[1]
-        stock.current = se[3]
-        stock.open = se[4]
-        stock.high = se[5]
-        stock.low = se[6]
-        stock.close = se[7]
-        stock.dealAmount = se[8]/100
-        stock.time = time.localtime(time.time()) #时间
-        #print stock
 
-        stockList.append(stock)
+    stockList = []
+    try:
+        df = get_real_price_dataframe()
+        for se in df.get_values():
+            stock = st.Stock('')
+            stock.code = se[0]
+            stock.name = se[1]
+            stock.current = se[3]
+            stock.open = se[4]
+            stock.high = se[5]
+            stock.low = se[6]
+            stock.close = se[7]
+            stock.dealAmount = se[8]/100
+            stock.time = time.localtime(time.time()) #时间
+            #print stock
+
+            stockList.append(stock)
+    except:
+        print 'get real price timeout'
 
     return stockList
 

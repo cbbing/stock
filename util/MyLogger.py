@@ -45,8 +45,8 @@ class Logger():
         # 创建一个handler，用于写入日志文件
         #fh = logging.handlers.TimedRotatingFileHandler(logname, 'D')
         #fh.suffix = "%Y%m%d.log"
-        fh = logging.FileHandler(logname)
-        fh.setLevel(logging.DEBUG)
+        # fh = logging.FileHandler(logname)
+        # fh.setLevel(logging.DEBUG)
 
         # 再创建一个handler，用于输出到控制台
         ch = logging.StreamHandler()
@@ -55,11 +55,11 @@ class Logger():
         # 定义handler的输出格式
         #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         formatter = format_dict[int(loglevel)]
-        fh.setFormatter(formatter)
+        # fh.setFormatter(formatter)
         ch.setFormatter(formatter)
 
         # 给logger添加handler
-        self.logger.addHandler(fh)
+        # self.logger.addHandler(fh)
         self.logger.addHandler(ch)
 
 

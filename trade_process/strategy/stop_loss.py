@@ -5,8 +5,12 @@
 """
 
 import pandas as pd
-from init import engine
+import copy
+from operator import itemgetter
+
+from init import engine, engine_test
 from util.codeConvert import GetNowDate
+from data_process.online_data import get_real_price_dataframe
 
 #限价止损
 def stop_loss_by_price():
@@ -15,10 +19,14 @@ def stop_loss_by_price():
     :return:
     """
     #查询持仓股票
-    symbolAccount = SymbolAccount(100000)
+    symbolAccount = SymbolAccount()
+    symbolAccount.init_position_from_db()
+
     threshold_profit_open = 0.08 #止盈开启阈值
     threshold_profit_pretect = 0.02 #止盈保护阈值
     threshold_loss_pretect = 0.1 #止损保护阈值
+
+    judgements = []
 
     #计算持仓股票的最初价格
     for symbol in symbolAccount.avail_secpos.keys():
@@ -26,25 +34,34 @@ def stop_loss_by_price():
         if len(orders) == 0:
             continue
 
-        trade_date_begin = orders[0]
+        trade_date_begin = orders[0][0]
 
         #止盈保护
-        close_prices = get_close_prices(symbol, trade_date_begin, GetNowDate())
+        close_prices = get_close_prices(symbol, trade_date_begin[:10], GetNowDate())
         if len(close_prices) < 1:
             continue
 
         close_price_begin = close_prices[0]
         realtime_price = get_realtime_price(symbol)
+        if realtime_price == -1:
+            continue
 
         if max(close_prices) >= (1 + threshold_profit_open)*close_price_begin: #止盈策略启动
             max_price = max(close_prices)
             if realtime_price <= (1 - threshold_profit_pretect) * max_price:
                 #符合止盈策略,卖出
+                reason = '符合止盈策略:相比最高价,下跌了{:.2}%'.format((max_price - realtime_price) / max_price * 100)
                 symbolAccount.order(symbol, symbolAccount.avail_secpos[symbol], realtime_price, GetNowDate())
+                judgements.append((symbol, -1, reason))
 
         elif realtime_price <= (1 - threshold_loss_pretect) * close_price_begin:
             #符合止损策略,卖出
+            down = (close_price_begin-realtime_price)/close_price_begin*100
+            reason = '符合止损策略:相比成本价,下跌了{:.2f}%'.format(down)
             symbolAccount.order(symbol, symbolAccount.avail_secpos[symbol], realtime_price, GetNowDate())
+            judgements.append((symbol, -1, reason))
+
+    return judgements
 
 
 
@@ -62,6 +79,29 @@ class SymbolAccount():
         self.avail_secpos = {} # 字典，键为证券代码，值为持有的证券数量, {'000001': 100, '600000': 100}
         self.order_history = {} #dict, {symbol:000001, [(order_time:2016-07-11, , order_amount:100, order_price)]} , order_amount为正时买入,为负时卖出
         self.position_history = [] # 持仓历史[2016-07-11, cash, {'600000':100, '600031':300}]
+
+    def init_position_from_db(self):
+        """
+        从数据库初始化持仓情况
+        :return:
+        """
+        sql = "SELECT * FROM classifier_db.trade_order order by trade_time asc"
+        df = pd.read_sql(sql, engine_test)
+        #剩余现金
+        if len(df):
+            self.cash = df['cash'].get_values()[-1]
+
+        for code in df['code'].drop_duplicates():
+            df_code = df[df['code'] == code]
+            self.avail_secpos[code] = df_code['trade_count'].sum()
+
+            self.order_history.setdefault(code, [])
+            for _, row in df_code.iterrows():
+                self.order_history[code].append([str(row['trade_time']), row['trade_count'], row['trade_price']])
+
+
+
+
 
     def order(self, smybol, amount, price, trade_date):
         """
@@ -272,23 +312,23 @@ def get_close_price(symbol, trade_date):
 
     """
     if len(symbol) == 6:
-        sql = "SELECT close_hfq FROM hq_db.stock_kline_fq where code='{}' and date>='{}' order by date asc".format(symbol, trade_date)
+        sql = "SELECT close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' order by date asc".format(symbol, trade_date)
     else:
-        sql = "SELECT close as close_hfq FROM hq_db.stock_kline_fq where code='{}' and date>='{}' order by date asc".format(
+        sql = "SELECT close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' order by date asc".format(
             symbol, trade_date)
     df = pd.read_sql(sql, engine)
-    close_hfqs = df['close_hfq'].get_values()
-    if len(close_hfqs) == 0:
+    closes = df['close'].get_values()
+    if len(closes) == 0:
         # raise Exception("get code close_price error!")
         return -1
 
-    return close_hfqs[0]
+    return closes[0]
 
 
 def get_close_prices(symbol, trade_date_begin, trade_date_end):
 
     """
-    获取后复权价格序列
+    获取前复权价格序列
     :param symbol:
     :param trade_date_begin:
     :param trade_date_end:
@@ -296,15 +336,15 @@ def get_close_prices(symbol, trade_date_begin, trade_date_end):
     """
 
     if len(symbol) == 6:
-        sql = "SELECT close_hfq FROM hq_db.stock_kline_fq where code='{}' and date>='{}' and date <='{}' order by date asc".format(
+        sql = "SELECT date, close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' and date <='{}' order by date asc".format(
                 symbol, trade_date_begin, trade_date_end)
     else:
-        sql = "SELECT close as close_hfq FROM hq_db.stock_kline_fq where code='{}' and date>='{}' and date <='{}'  order by date asc".format(
+        sql = "SELECT date, close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' and date <='{}'  order by date asc".format(
             symbol, trade_date_begin, trade_date_end)
     df = pd.read_sql(sql, engine)
-    close_hfqs = df['close_hfq'].get_values()
+    closes = df['close'].get_values()
 
-    return close_hfqs
+    return closes
 
 def get_realtime_price(symbol):
     """
@@ -312,20 +352,15 @@ def get_realtime_price(symbol):
     :param symbol:
     :return:
     """
-    import tushare as ts
-    import wrapcache
-
-    @wrapcache.wrapcache(timeout=5*60)
-    def _get_real_price_all():
-        df = ts.get_today_all()
-        return df
-
-    df = _get_real_price_all()
-    df_s = df[df['code'] == symbol]
-    if len(df_s['trade'].get_values()):
-        return df_s['trade'].get_values()[0]
-    else:
+    try:
+        df = get_real_price_dataframe()
+        df_s = df[df['code'] == symbol]
+        if len(df_s['trade'].get_values()):
+            return df_s['trade'].get_values()[0]
+        else:
+            return -1
+    except:
         return -1
 
-def get_my_position():
-    sql = ''
+if __name__ == "__main__":
+    stop_loss_by_price()
