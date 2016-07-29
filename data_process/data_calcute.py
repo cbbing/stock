@@ -134,12 +134,12 @@ def calcute_ma(df, avr_short=12, avr_long=40):
     if len(df) == 0:
         return
 
-    print "{} calcute ma".format(df.ix[0,'code'])
+    # print "{} calcute ma".format(df.ix[0,'code'])
     df['ma_' + str(avr_short)] = pd.rolling_mean(df['close'], avr_short)  # 12
     df['ma_' + str(avr_long)] = pd.rolling_mean(df['close'], avr_long)  # 40
 
 
-    print "{} calcute ema".format(df.ix[0, 'code'])
+    # print "{} calcute ema".format(df.ix[0, 'code'])
     df['ema_' + str(avr_short)] = pd.ewma(df['close'], span=avr_short)  # 12
     df['ema_' + str(avr_long)] = pd.ewma(df['close'], span=avr_long)  # 40
 
