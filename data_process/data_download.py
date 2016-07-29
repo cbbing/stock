@@ -238,35 +238,36 @@ def check_unnormal_stock_price():
         df = pd.read_sql(sql, engine)
         if len(df) < 2:
             continue
-        print code, len(df)
+        # print code, len(df)
         df.index = df['date']
         returns_close = df['close'].pct_change()
-        returns_close_hfq = df['close_hfq'].pct_change()
+        # returns_close_hfq = df['close_hfq'].pct_change()
         returns_close[0]= 0
-        returns_close_hfq[0] = 0
+        # returns_close_hfq[0] = 0
 
-        print returns_close_hfq[:10]
+        # print returns_close_hfq[:10]
 
         df['returns_close'] = returns_close
-        df['returns_close_hfq'] = returns_close_hfq
+        # df['returns_close_hfq'] = returns_close_hfq
 
-        df1 = df[df['returns_close_hfq']==df['returns_close_hfq'].min()]
+        df1 = df[df['returns_close']==df['returns_close'].min()]
         # print df1
 
         #print '前复权', min(returns_close), '后复权',min(returns_close_hfq)
-        # if returns_close.min() < -0.15:
-        #     # print ">"*10, name, code, '前复权', returns_close.min()
-        #     unnormal_codes.append((name, code, '前复权', returns_close.min()))
-        if returns_close_hfq.min() < -0.15:
+        if returns_close.min() < -0.15:
             print df1
-            # print  ">"*10, name, code, '后复权', returns_close_hfq.min()
-            unnormal_codes.append((name, code, '后复权', returns_close_hfq.min()))
+            # print ">"*10, name, code, '前复权', returns_close.min()
+            unnormal_codes.append((name, code, '前复权', returns_close.min()))
+        # if returns_close_hfq.min() < -0.15:
+        #     print df1
+        #     # print  ">"*10, name, code, '后复权', returns_close_hfq.min()
+        #     unnormal_codes.append((name, code, '后复权', returns_close_hfq.min()))
 
     print "\n"*5
     for un_code in unnormal_codes:
         print "{}:{}\t{}\t{}".format(un_code[0], un_code[1], un_code[2], un_code[3])
 
-    print "total count", len(unnormal_codes)/2
+    print "total count", len(unnormal_codes)
 
 if __name__ == '__main__':
     check_unnormal_stock_price()
