@@ -140,6 +140,9 @@ def download_kline_source_select(code, date_start, date_end):
 
         if len(code)==6:
             df_qfq['close_hfq'] = df_hfq['close']
+        else:
+            df_qfq['close_hfq'] = df_qfq['close']
+
 
         print df_qfq.head()
 
@@ -254,8 +257,15 @@ def check_unnormal_stock_price():
         # print df1
 
         #print '前复权', min(returns_close), '后复权',min(returns_close_hfq)
-        if returns_close.min() < -0.15:
+        if returns_close.min() < -0.2:
             print df1
+            #先删除code对应的行情
+            sql = "delete from stock_kline_fq where code='{}'".format(code)
+            print sql
+            engine.execute(sql)
+            #再重新取
+            download_stock_kline_by_code(code)
+
             # print ">"*10, name, code, '前复权', returns_close.min()
             unnormal_codes.append((name, code, '前复权', returns_close.min()))
         # if returns_close_hfq.min() < -0.15:
@@ -270,11 +280,11 @@ def check_unnormal_stock_price():
     print "total count", len(unnormal_codes)
 
 if __name__ == '__main__':
-    check_unnormal_stock_price()
-    exit(0)
 
     download_stock_basic_info()
     download_all_stock_history_k_line()
+
+    check_unnormal_stock_price()
     #calcute_ma_all()
     #download_stock_kline_to_sql('000002', date_start='1991-01-29',date_end='2012-12-16')
     
