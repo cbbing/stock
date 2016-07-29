@@ -223,8 +223,41 @@ def download_all_stock_history_k_line():
         print str(e)
     print 'download all stock k-line finish'
  
-    
+
+def check_unnormal_stock_price():
+    """
+    异常股价检测
+    :return:
+    """
+    sql = "select code from stock_basic_all"
+    df_code =  pd.read_sql(sql, engine)
+
+    unnormal_codes = []
+    for code in df_code['code'].get_values():
+        sql = "select date, close, close_hfq from hq_db.stock_kline_fq where code='{}' order by date asc ".format(code)
+        df = pd.read_sql(sql, engine)
+        print code, len(df)
+        df.index = df['date']
+        returns_close = df['close'].pct_change()
+        returns_close_hfq = df['close'].pct_change()
+        returns_close[0]= 0
+        returns_close_hfq[0] = 0
+        print '前复权', min(returns_close), '后复权',min(returns_close_hfq)
+        if returns_close.min() < -0.15:
+            print ">"*50, code, '前复权', returns_close.min()
+            unnormal_codes.append((code, '前复权', returns_close.min()))
+        if min(returns_close_hfq) < -0.15:
+            print  ">"*50, code, '后复权', returns_close_hfq.min()
+            unnormal_codes.append((code, '后复权', returns_close_hfq.min()))
+
+    print "\n"*5
+    for un_code in unnormal_codes:
+        print "{}\t{}\t{}".format(un_code[0], un_code[1], un_code[2])
+
 if __name__ == '__main__':
+    check_unnormal_stock_price()
+    exit(0)
+
     download_stock_basic_info()
     download_all_stock_history_k_line()
     #calcute_ma_all()
