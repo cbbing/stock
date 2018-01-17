@@ -5,13 +5,6 @@ import sys
 import platform
 from apscheduler.schedulers.blocking import BlockingScheduler
 import logging
-logging.basicConfig()
-# import errorLogger
-if platform.system() == 'Windows':
-    sys.path.append('../')
-else:
-    sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
-
 import ctypes
 from ConfigParser import ConfigParser
 
@@ -25,6 +18,13 @@ from util.codeConvert import GetNowTime
 from util.send_mail import send_email_163
 from init import *
 from strategy.stop_loss import stop_loss_by_price
+
+logging.basicConfig()
+# import errorLogger
+if platform.system() == 'Windows':
+    sys.path.append('../')
+else:
+    sys.path.append('/Users/cbb/Documents/pythonspace/stock-master/')
 
 #stock_list =['600893']
 def main():
@@ -41,7 +41,6 @@ def main():
     if judgements:
         for judgement in judgements:
             infoLogger.logger.info(encode_wrap('卖出:{}'.format(judgement[0])))
-
 
     cf = ConfigParser()
     cf.read(config_file_path)
@@ -77,7 +76,6 @@ def main():
             str_all = str_all + stock.str_print() + '\n'
 
     send_email_163(subject='MA Strategy Results', content=str_all)
-
 
 @fn_timer_        
 def live_mult_stock(stockClassList):  
@@ -131,9 +129,6 @@ def live_single_stock(stock):
         stock = Stock()
         return stock
     
-
-   
- 
 if __name__ == "__main__":
     print ">>live trade begin"
     main()

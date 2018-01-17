@@ -6,7 +6,7 @@
 import pandas as pd
 import numpy as np
 from data_process.data_calcute import calcute_ma
-
+from trade_process import efund_mail2
 from init import *
 from util.codeConvert import GetNowDate
 from copy import deepcopy
@@ -166,8 +166,7 @@ class MAStrategy:
         elif dma_price[-1] < dma_price[-2] and dma_price[-1] < ama_price[-1] \
                             and dma_price[-2] > ama_price[-2]:
             signal = SIGNAL_SALE           
-        return signal            
-        
+        return signal
      
     # TRIX指标择时 (回测）
     def select_Time_TRIX(self):
@@ -203,9 +202,6 @@ class MAStrategy:
                             and trixs[-2] > maxtrix[-2]:
             signal = SIGNAL_SALE            
         return signal
-    
-            
-       
     
     # AMA指标择时
     def select_Time_AMA(self):
@@ -250,3 +246,43 @@ class MAStrategy:
         constaint = sSC*sSC
         return constaint
 
+def macd_live(code, df=None):
+    fundlist = efund_mail2.get_histrydata(code, 365)
+    df = pd.DataFrame(fundlist[::-1], columns=['date', 'close', 'countclose', 'change'])
+    url = 'http://fund.eastmoney.com/%s.html' % code[0]
+    todayvalue = efund_mail2.spider(url)
+    if (todayvalue != None):
+        MAStrategyPos = MAStrategy(code[0],todayvalue[0],df)
+        print str(code)
+        print u'-- MA 策略 --'
+        print MAStrategyPos.select_Time_MA()
+
+        print u'-- MACD 策略 --'
+        print MAStrategyPos.select_Time_MACD()
+
+        print u'-- DMA 策略 --'
+        print MAStrategyPos.select_Time_DMA()
+
+        print u'-- TRIX 策略 -->'
+        print MAStrategyPos.select_Time_TRIX()
+
+        print u'-- 组合策略 --'
+        print MAStrategyPos.select_Time_Mix()
+
+        print u'-- AMA策略 --'
+        print MAStrategyPos.select_Time_AMA()
+
+        print '\n'
+        print "main end"
+
+def macd_live_main(code):
+    code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
+            ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
+            ['161125', 'SPX500']]
+    buysell = []
+    for i in code:
+        # save(strfundcode=i ,numdays=365*1)
+        macd_live(i)
+
+if __name__ == '__main__':
+    macd_live_main(1)

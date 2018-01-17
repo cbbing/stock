@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from data_process.download_stock import downloadAllHistoryAShareData
+from trade_process import efund_mail2
 
-AVR_SHORT = 12
-AVR_LONG = 40
+# AVR_SHORT = 12
+# AVR_LONG = 40
  
 SIGNAL_BUY = 1  #买 
 SIGNAL_SALE = -1 #卖
@@ -48,9 +49,11 @@ def processEMA(stockCsvPath, stockCsvNewPath):
     stock_data.to_csv(stockCsvNewPath, index=False)   
     
 # 自适应均线    
-def self_adaptive_ma(stock_data):
+def self_adaptive_ma(stock_data,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
      # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     high_price = stock_data['High'].get_values()
@@ -97,14 +100,15 @@ def self_adaptive_ma(stock_data):
      
 
 # MA指标择时  (回测）
-def select_Time_MA(stock_data, stockName):
-    
+def select_Time_MA(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     start_money = 100000000
     now_count = 0
     now_money = start_money
     
     # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     
@@ -166,14 +170,15 @@ def select_Time_MA(stock_data, stockName):
     #stock_data.sort('date', ascending=False, inplace=True)
     
 # MACD指标择时 (回测）
-def select_Time_MACD(stock_data, stockName):
-    
+def select_Time_MACD(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     start_money = 100000000
     now_count = 0
     now_money = start_money
     
     # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     
@@ -244,14 +249,15 @@ def select_Time_MACD(stock_data, stockName):
     return dif_price, dea_price, macd_price
 
 # DMA指标择时 (回测）
-def select_Time_DMA(stock_data, stockName):
-    
+def select_Time_DMA(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     start_money = 100000000
     now_count = 0
     now_money = start_money
     
     # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     
@@ -319,14 +325,15 @@ def select_Time_DMA(stock_data, stockName):
     #stock_data.sort('date', ascending=False, inplace=True)
  
 # DMA指标择时 (回测）
-def select_Time_TRIX(stock_data, stockName):
-    
+def select_Time_TRIX(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     start_money = 100000000
     now_count = 0
     now_money = start_money
     
     # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     
@@ -382,8 +389,9 @@ def select_Time_TRIX(stock_data, stockName):
 
 
 # 组合择时指标 (回测）
-def select_Time_Mix(stock_data, stockName):
-    
+def select_Time_Mix(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     start_money = 100000000
     now_count = 0
     now_money = start_money
@@ -450,8 +458,9 @@ def select_Time_Mix(stock_data, stockName):
     stock_data['SIGNAL_MIX'] = signals
 
 # AMA指标择时
-def select_Time_AMA(stock_data, stockName):
-    
+def select_Time_AMA(stock_data, stockName,Avg):
+    AVR_SHORT = Avg[0]
+    AVR_LONG = Avg[1]
     percentage = 0.1
     
     start_money = 100000000
@@ -460,7 +469,7 @@ def select_Time_AMA(stock_data, stockName):
     one_hand = 10000
     
     # 将数据按照交易日期从远到近排序
-    stock_data.sort('Date', inplace=True)
+    # stock_data.sort('Date', inplace=True)
     
     close_price = stock_data['Adj Close'].get_values()
     
@@ -573,40 +582,44 @@ def run(stockCsvPath, stockName):
 def macdmain(stockList):
     print "main begin"
     # stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
-    downloadAllHistoryAShareData(stockList)
+    # downloadAllHistoryAShareData(stockList)
     # stockList = ['000725']
+    
     for stockName in stockList:
         # if stockName != '002600':
         #     continue
-        stockCsvPath = os.path.pardir + "\\stockdata\\" + stockName + '.csv'
+        # stockCsvPath = os.path.pardir + "\\stockdata\\" + stockName + '.csv'
         # stockCsvPath = stockName + '.csv'
-        if os.path.exists(stockCsvPath) == False:
-            continue
+        # if os.path.exists(stockCsvPath) == False:
+        #     continue
         # stockCsvNewPath = stockName + '_macd.csv'
         # processEMA(stockCsvPath, stockCsvNewPath)
-        stock_data = pd.read_csv(stockCsvPath)
+        # stock_data = pd.read_csv(stockCsvPath)
+        fundlist = efund_mail2.get_histrydata(stockName, 365)
+        stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
-
-        print u'>>>>>>>>>>>>> MA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        
+        print u'-- MA 策略 --'
         select_Time_MA(stock_data, stockName)
 
-        print u'>>>>>>>>>>>>> MACD 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        print u'-- MACD 策略 --'
         select_Time_MACD(stock_data, stockName)
 
-        print u'>>>>>>>>>>>>> DMA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        print u'-- DMA 策略 --'
         select_Time_DMA(stock_data, stockName)
 
-        print u'>>>>>>>>>>>>> TRIX 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        print u'-- TRIX 策略 -->'
         select_Time_TRIX(stock_data, stockName)
 
-        print u'>>>>>>>>>>>>> 组合策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        print u'-- 组合策略 --'
         select_Time_Mix(stock_data, stockName)
 
-        print u'>>>>>>>>>>>>> AMA策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        print u'-- AMA策略 --'
         select_Time_AMA(stock_data, stockName)
 
         print '\n'
     print "main end"
+    
 if __name__ == "__main__":
     print "main begin"
     stockList=['000725','000783','002167','002505','002600','300315','600000','600011','600048','601001']

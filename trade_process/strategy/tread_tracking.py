@@ -211,7 +211,7 @@ def tread_track_backtest(code, df=None):
     # df = get_stock_k_line(code, date_start='2015-12-30', date_end='2016-05-05')
     # df=efund_mail2.get_histrydata(code,365)
     fundlist = efund_mail2.get_histrydata(code, 365)
-    df = pd.DataFrame(fundlist[::-1], columns=['date', 'close', 'countclose', 'change'])
+    df = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
     if len(df) == 0:
         return None
     # print df.head(2)
@@ -544,6 +544,9 @@ if __name__ == "__main__":
     # result_list = sorted(result_list, key = lambda x : x[2])
     # print result_list[0]
     # print result_list[-1]
+    code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
+            ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
+            ['161125', 'SPX500']]
     stock_trader_main()
 
 
