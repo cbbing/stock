@@ -598,24 +598,24 @@ def macdmain(stockList):
         fundlist = efund_mail2.get_histrydata(stockName, 365)
         stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
-        
+        Avg=[5,12]   
         print u'-- MA 策略 --'
-        select_Time_MA(stock_data, stockName)
+        select_Time_MA(stock_data, stockName,Avg)
 
         print u'-- MACD 策略 --'
-        select_Time_MACD(stock_data, stockName)
+        select_Time_MACD(stock_data, stockName,Avg)
 
         print u'-- DMA 策略 --'
-        select_Time_DMA(stock_data, stockName)
+        select_Time_DMA(stock_data, stockName,Avg)
 
         print u'-- TRIX 策略 -->'
-        select_Time_TRIX(stock_data, stockName)
+        select_Time_TRIX(stock_data, stockName,Avg)
 
         print u'-- 组合策略 --'
-        select_Time_Mix(stock_data, stockName)
+        select_Time_Mix(stock_data, stockName,Avg)
 
         print u'-- AMA策略 --'
-        select_Time_AMA(stock_data, stockName)
+        select_Time_AMA(stock_data, stockName,Avg)
 
         print '\n'
     print "main end"
@@ -636,24 +636,24 @@ if __name__ == "__main__":
         #processEMA(stockCsvPath, stockCsvNewPath)
         stock_data = pd.read_csv(stockCsvPath)
         #self_adaptive_ma(stock_data)
-        
-        print u'>>>>>>>>>>>>> MA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_MA(stock_data, stockName)
-           
-        print u'>>>>>>>>>>>>> MACD 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_MACD(stock_data, stockName)
-       
-        print u'>>>>>>>>>>>>> DMA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_DMA(stock_data, stockName)
-           
-        print u'>>>>>>>>>>>>> TRIX 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_TRIX(stock_data, stockName)
-          
-        print u'>>>>>>>>>>>>> 组合策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_Mix(stock_data, stockName)
-       
-        print u'>>>>>>>>>>>>> AMA策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
-        select_Time_AMA(stock_data, stockName)
+        Avg=[5,10]   
+        print u'-- MA 策略 --'
+        select_Time_MA(stock_data, stockName,Avg)
+
+        print u'-- MACD 策略 --'
+        select_Time_MACD(stock_data, stockName,Avg)
+
+        print u'-- DMA 策略 --'
+        select_Time_DMA(stock_data, stockName,Avg)
+
+        print u'-- TRIX 策略 -->'
+        select_Time_TRIX(stock_data, stockName,Avg)
+
+        print u'-- 组合策略 --'
+        select_Time_Mix(stock_data, stockName,Avg)
+
+        print u'-- AMA策略 --'
+        select_Time_AMA(stock_data, stockName,Avg)
                 
         print '\n'
     print "main end"    
