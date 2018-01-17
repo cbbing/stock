@@ -1,6 +1,7 @@
 #coding=utf-8
 from trade_process.strategy.macd_back_test import macdmain
 from trade_process.strategy.tread_tracking import stock_trader_main
+from trade_process.strategy.macd_live_test import macd_live_main
 if __name__ == '__main__':
     stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
     ChinaStockIndexList = [
@@ -17,5 +18,6 @@ if __name__ == '__main__':
                     ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
                     ['161125', 'SPX500']]
     #均线策略
-    macdmain(ChinaStockIndexList)
+    macdmain(code)
     stock_trader_main(code)
+    macd_live_main(code)
