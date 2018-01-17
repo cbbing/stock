@@ -16,11 +16,7 @@ import util.stockutil as util
 
 #获取实时股价(同时获取多只股票)
 def getLiveMutliChinaStockPrice(stockCodeList):
-    
-    
-    
     try:
-        
         stockCodeListEx = []
         for stockCode in stockCodeList:
             if len(str(stockCode)) == 6:
@@ -57,7 +53,6 @@ def getLiveMutliChinaStockPrice(stockCodeList):
 
 #获取实时股价
 def getLiveChinaStockPrice(stockCode):
-    
     try:
         exchange = "sh" if (int(stockCode) // 100000 == 6) else "sz"
         dataUrl = "http://hq.sinajs.cn/list=" + exchange + stockCode

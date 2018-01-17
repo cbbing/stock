@@ -1,5 +1,4 @@
 #coding=utf-8
-
 __author__ = 'cbb'
 
 import sys
@@ -7,30 +6,35 @@ sys.path.append('C:\Code\stock-master')
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-import MySQLdb
+# import MySQLdb
+import pymysql
 import numpy as np
 import pandas as pd
 import datetime
 from tqdm import tqdm
 from multiprocessing.dummy import Pool as ThreadPool
 import wrapcache
-
 from data_get import *
 
-
-
-
-
-
+ChinaStockIndexList = [
+    "000001", # sh000001 上证指数
+    "399001", # sz399001 深证成指
+    "000300", # sh000300 沪深300
+    "399005", # sz399005 中小板指
+    "399006", # sz399006 创业板指
+    "000003",# sh000003 B股指数
+    "000016",#上证50
+    "000012",#国债指数
+]
 
 #计算均线
 def calcute_ma_all():
-    codes = get_all_stock_codes()
+    # codes = get_all_stock_codes()
     # for code in tqdm(codes):
     #     _calcute_ma(code)
 
     pool = ThreadPool(processes=4)
-    pool.map(_calcute_ma, codes)
+    pool.map(_calcute_ma, ChinaStockIndexList)
     pool.close()
     pool.join()
 
@@ -103,7 +107,6 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
             #只计算最后1个收盘
             if is_calcute_lastest and count >= 7:
                 break
-
     except Exception, e:
         print (str(code)+":"+date_start+" ~ "+date_end+str(e))
 
@@ -111,7 +114,7 @@ def _calcute_ma(code, date_start='', date_end='', is_calcute_lastest=False):
 def calcute_ma_lastest_all():
     codes = get_all_stock_codes()
 
-    for code in codes:
+    for code in ChinaStockIndexList:
         _calcute_ma_lastest(code)
 
 # 计算最近日期的均线 (单个)
@@ -121,7 +124,6 @@ def _calcute_ma_lastest(code):
     d_today = datetime.date.today()
     date_start = d_avr_long.strftime('%Y-%m-%d')
     date_end = d_today.strftime('%Y-%m-%d')
-
     _calcute_ma(code, date_start, date_end, True)
 
 @wrapcache.wrapcache(timeout=6*60*60)

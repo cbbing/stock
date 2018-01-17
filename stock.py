@@ -21,10 +21,12 @@ period_daily = period_All_List[1]
 ChinaStockIndexList = [
     "000001", # sh000001 上证指数
     "399001", # sz399001 深证成指
-#     "000300", # sh000300 沪深300
-#     "399005", # sz399005 中小板指
-#     "399006", # sz399006 创业板指
-#     "000003",  # sh000003 B股指数
+    "000300", # sh000300 沪深300
+    "399005", # sz399005 中小板指
+    "399006", # sz399006 创业板指
+    "000003",# sh000003 B股指数
+    "000016",#上证50
+    "000012",#国债指数
 ]
 ChinaStockIndividualList = [
     "600011", #  
@@ -191,13 +193,13 @@ def getWorldStockIndexInfo(stockDict):
 def test_china_index_data():
     for stockCode in ChinaStockIndexList:
         twitter = getChinaStockIndexInfo(stockCode, period_daily)
-        #print twitter['message'] + twitter['image']
+        print twitter['message'] + twitter['image']
 
 def test_china_individual_data():
     
-#     for stockCode in ChinaStockIndividualList:
-#         twitter = getChinaStockIndividualInfo(stockCode, period_min)
-#         print(twitter['message'] + twitter['image'])
+    # for stockCode in ChinaStockIndividualList:
+    #     twitter = getChinaStockIndividualInfo(stockCode, period_min)
+    #     print(twitter['message'] + twitter['image'])
     total = 0.0
     for stockCodeNumDict in ChinaStockNumIndividualList:
         twitter = getChinaStockIndividualInfo(stockCodeNumDict['code'], period_min)
@@ -216,20 +218,18 @@ def test_global_index_data():
 def main():
     "main function"
     print base64.b64decode(b'Q29weXJpZ2h0IChjKSAyMDEyIERvdWN1YmUgSW5jLiBBbGwgcmlnaHRzIHJlc2VydmVkLg==').decode()
-    
-#     dataUrl = "http://ichart.yahoo.com/table.csv?s=600000.SS&a=08&b=25&c=2010&d=09&e=8&f=2010&g=d"
-#     stdout = urllib.request.urlopen(dataUrl)
-#     stdoutInfo = stdout.read().decode('utf-8')
-    
+    # dataUrl = "http://ichart.yahoo.com/table.csv?s=600000.SS&a=08&b=25&c=2010&d=09&e=8&f=2010&g=d"
+    # stdout = urllib.request.urlopen(dataUrl)
+    # stdoutInfo = stdout.read().decode('utf-8')
     ISOTIMEFORMAT='%Y-%m-%d %X'
     while 1:
         str = time.strftime(ISOTIMEFORMAT, time.localtime())
         print str
         test_china_index_data()
-        test_china_individual_data()
-        #test_global_index_data()
+        # test_china_individual_data()
+        test_global_index_data()
         print '\n'
-        sleep(180) #180s
+        sleep(10) #180s
 
 if __name__ == '__main__':
     #plotData()

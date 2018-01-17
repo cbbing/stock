@@ -26,12 +26,11 @@ def select_time_ma(df_closeprice, ma_short=12, ma_long=40):
     for ix, row in df_closeprice.iterrows():
         pass
 
-
     # if ema_close_short[-1] > ema_close_short[-2] and ema_close_short[-1] > ema_close_long[-1] \
     #                     and ema_close_short[-2] < ema_close_long[-2]:
     #     signal = SIGNAL_BUY
     # elif ema_close_long[-1] < ema_close_long[-2] and ema_close_short[-1] < ema_close_long[-1] \
     #                     and ema_close_short[-2] > ema_close_long[-2]:
     #     signal = SIGNAL_SALE
-
+    # 
     # return signal

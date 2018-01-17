@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from data_process.download_stock import downloadAllHistoryAShareData
 
 AVR_SHORT = 12
 AVR_LONG = 40
@@ -423,8 +424,7 @@ def select_Time_Mix(stock_data, stockName):
             up += 1
         elif s_trix[i] == -1:
             down += 1            
-        
-        
+
         if up >= 3:
             if bBuySignal:
                 signal = SIGNAL_BUY
@@ -546,10 +546,10 @@ def getMAStrategy(stockCsvPath, stockName, strategyName='MACD'):
 def run(stockCsvPath, stockName):
     if os.path.exists(stockCsvPath) == False:
         return
-    #stockCsvNewPath = stockName + '_macd.csv'
-    #processEMA(stockCsvPath, stockCsvNewPath)
+    stockCsvNewPath = stockName + '_macd.csv'
+    processEMA(stockCsvPath, stockCsvNewPath)
     stock_data = pd.read_csv(stockCsvPath)
-    #self_adaptive_ma(stock_data)
+    self_adaptive_ma(stock_data)
     
     print u'>>>>>>>>>>>>> MA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
     select_Time_MA(stock_data, stockName)
@@ -570,14 +570,51 @@ def run(stockCsvPath, stockName):
     select_Time_AMA(stock_data, stockName)
             
     print '\n'
-                               
+def main(stockList):
+    print "main begin"
+    # stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
+    downloadAllHistoryAShareData(stockList)
+    # stockList = ['000725']
+    for stockName in stockList:
+        # if stockName != '002600':
+        #     continue
+        stockCsvPath = os.path.pardir + "\\stockdata\\" + stockName + '.csv'
+        # stockCsvPath = stockName + '.csv'
+        if os.path.exists(stockCsvPath) == False:
+            continue
+        # stockCsvNewPath = stockName + '_macd.csv'
+        # processEMA(stockCsvPath, stockCsvNewPath)
+        stock_data = pd.read_csv(stockCsvPath)
+        # self_adaptive_ma(stock_data)
+
+        print u'>>>>>>>>>>>>> MA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_MA(stock_data, stockName)
+
+        print u'>>>>>>>>>>>>> MACD 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_MACD(stock_data, stockName)
+
+        print u'>>>>>>>>>>>>> DMA 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_DMA(stock_data, stockName)
+
+        print u'>>>>>>>>>>>>> TRIX 策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_TRIX(stock_data, stockName)
+
+        print u'>>>>>>>>>>>>> 组合策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_Mix(stock_data, stockName)
+
+        print u'>>>>>>>>>>>>> AMA策略 >>>>>>>>>>>>>>>>>>>>>>>>>>'
+        select_Time_AMA(stock_data, stockName)
+
+        print '\n'
+    print "main end"
 if __name__ == "__main__":
     print "main begin"
     stockList=['000725','000783','002167','002505','002600','300315','600000','600011','600048','601001']
+    downloadAllHistoryAShareData(stockList)
     #stockList = ['000725']
     for stockName in stockList:
-#         if stockName != '002600':
-#             continue
+        # if stockName != '002600':
+        #     continue
         stockCsvPath = os.path.pardir +"\\stockdata\\" + stockName + '.csv'
         #stockCsvPath = stockName + '.csv'
         if os.path.exists(stockCsvPath) == False:

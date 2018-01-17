@@ -6,7 +6,7 @@ import platform
 from apscheduler.schedulers.blocking import BlockingScheduler
 import logging
 logging.basicConfig()
-
+# import errorLogger
 if platform.system() == 'Windows':
     sys.path.append('../')
 else:
@@ -26,15 +26,7 @@ from util.send_mail import send_email_163
 from init import *
 from strategy.stop_loss import stop_loss_by_price
 
-
-
-
-
 #stock_list =['600893']
-
-
-
-
 def main():
 
     #获取实时股价

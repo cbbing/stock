@@ -1,5 +1,6 @@
 #!/usr/local/bin/python
 #coding=utf-8
+#下载股票历史数据
 import os
 import urllib2
 import datetime
@@ -19,18 +20,18 @@ import re
 #     group = re.match('(.*)', htmlstr).group()
 #     print group
     
-# 下载所有A股数据               
-def downloadAllHistoryAShareData():
+# 下载所有A股数据
+# listAll ：股票代码
+def downloadAllHistoryAShareData(listAll):
     # os.path.pardir: 上级目录
     downloadDir = os.path.pardir + '\stockdata' 
-    stockDownload = StockDownload(downloadDir, date(2014,1,1), date.today())
+    stockDownload = StockDownload(downloadDir, date(2017,1,1), date.today())
     
 #     listSS = range(600000, 604000)
 #     listSZ = range(000000, 004060)
 #     listAll = listSS + listSZ
-    listAll = ['000725','000783','002167','002505','002600','300315','600000','600011','600048','601001']
-    
-    
+#     listAll = ['000725','000783','002167','002505','002600','300315','600000','600011','600048','601001']
+
     print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     startTime = time.clock()
     stockDownload.download_mutli(listAll, 'yahoo')
@@ -53,7 +54,7 @@ def downloadAllHistoryAShareData():
 class StockDownload:
     
     # 构造
-    def __init__(self, downloadDir, startDate=date(2014,1,1), endDate=date.today()):
+    def __init__(self, downloadDir, startDate=date(2016,1,1), endDate=date.today()):
         #self.stockCode = stockCode
         self.downloadDir = downloadDir
         self.startDate = startDate
@@ -71,14 +72,13 @@ class StockDownload:
         except Exception as e:
             print str(e)
             self.ignoreList = []
-            
-                
-    
+
     # 多线程下载
     def download_mutli(self, listSockeCode, source='yahoo'):
         pool = ThreadPool(processes=5)
         if source == 'yahoo':
             pool.map(self.downloadFromYahoo, listSockeCode)
+
         elif source == '163':
             pool.map(self.downloadFrom163, listSockeCode)      
         pool.close()
@@ -122,8 +122,8 @@ class StockDownload:
         url =  urlFmt % (d1[0], d1[1], d1[2],
                          d2[0], d2[1], d2[2], ticker, g)
     
-        self.down_file(url, stock_file)
-
+        if(not self.down_file(url, stock_file)):
+            self.downloadFrom163(stockCode)
         print (">>download finish："  + stockCode)
     
     # 从网易API下载    
@@ -184,11 +184,11 @@ class StockDownload:
         except Exception as e:
             print str(e)
             
-            basename = os.path.basename(os.path.splitext(file_name)[0]) #股票代码
-            
-            f = open(self.downloadDir + '/' + self.ignorelist_file, 'a') # a，文件尾部插入，不覆盖原数据
-            f.write('\n' + basename)
-            f.close()
+            # basename = os.path.basename(os.path.splitext(file_name)[0]) #股票代码
+            #
+            # f = open(self.downloadDir + '/' + self.ignorelist_file, 'a') # a，文件尾部插入，不覆盖原数据
+            # f.write('\n' + basename)
+            # f.close()
         finally:
             None        
 
@@ -200,4 +200,5 @@ class StockDownload:
 
 
 if __name__ == "__main__":
-    downloadAllHistoryAShareData()
+    listAll = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
+    downloadAllHistoryAShareData(listAll)

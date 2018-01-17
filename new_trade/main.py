@@ -40,7 +40,7 @@ def get_stock_price(code, include_realtime_price):
         df_code.rename(columns={'trade': 'close'}, inplace=True)
         df = pd.concat([df, df_code], ignore_index=True)
 
-    df.sort(columns='date', inplace=True)
+    # df.sort(columns='date', inplace=True)
     df = df.drop_duplicates(['date'])
     df.index = range(len(df))
     print '\n'

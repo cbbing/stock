@@ -8,7 +8,7 @@ import pandas as pd
 import copy
 from operator import itemgetter
 
-from init import engine, engine_test
+# from init import engine, engine_test
 from util.codeConvert import GetNowDate
 from data_process.online_data import get_real_price_dataframe
 
