@@ -570,7 +570,7 @@ def run(stockCsvPath, stockName):
     select_Time_AMA(stock_data, stockName)
             
     print '\n'
-def main(stockList):
+def macdmain(stockList):
     print "main begin"
     # stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
     downloadAllHistoryAShareData(stockList)
