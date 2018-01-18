@@ -475,8 +475,7 @@ def check_time(H, M,S):
         #         itchat.send(str(i[0]) + st+('  http://fund.eastmoney.com/%s.html'%i[0][0]) +('--  http://www.efunds.com.cn/html/fund/%s_fundinfo.htm'%i[0][0]), 'filehelper')
         #         itchat.send(str(i[0]) + st, toUserName='@9f545f6d5c3f89aa63956c3f386733232f7176569f71a26f477909c02828d735')
     s.enter(1, 1, check_time, deb_print())
-
-
+    
 def main1():
     a=1
     while True:
@@ -494,30 +493,7 @@ def main1():
         # xiaozhao.send_email()
         s.enter(1, 1, check_time, deb_print())
         s.run()
-
-if __name__=='__main__':
-    # itchat.auto_login(hotReload=True)
-    # itchat.run
-    #
-    # curTime = now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
-    # itchat.send(curTime, 'filehelper')
-    # buysell = one_predict.main_run()
-    # f = open("buysell.txt",'a')
-    # for i in buysell:
-    #     # write_str =  str(i) + '\n'
-    #     # f.write(write_str)
-    #     st = ''
-    #     if i[1]['buy'] != []:
-    #         st = u'买入点'
-    #         for j in i[1]['buy']:
-    #             st += str(j) + ' '
-    #     elif i[1]['sell'] != []:
-    #         st += u'  卖出点'
-    #         for k in i[1]['sell']:
-    #             st += str(k) + ' '
-    #     if st != '':
-    #         itchat.send(str(i[0]) + st, 'filehelper')
-    #         itchat.send(str(i[0]) + st,toUserName='@9f545f6d5c3f89aa63956c3f386733232f7176569f71a26f477909c02828d735')
+def run():
     now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     H = now[9:11]
     M = now[12:14]
@@ -547,6 +523,30 @@ if __name__=='__main__':
         # print sendmsg
         send_email(sendmsg)
     main1()
+if __name__=='__main__':
+    # itchat.auto_login(hotReload=True)
+    # itchat.run
+    #
+    # curTime = now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+    # itchat.send(curTime, 'filehelper')
+    # buysell = one_predict.main_run()
+    # f = open("buysell.txt",'a')
+    # for i in buysell:
+    #     # write_str =  str(i) + '\n'
+    #     # f.write(write_str)
+    #     st = ''
+    #     if i[1]['buy'] != []:
+    #         st = u'买入点'
+    #         for j in i[1]['buy']:
+    #             st += str(j) + ' '
+    #     elif i[1]['sell'] != []:
+    #         st += u'  卖出点'
+    #         for k in i[1]['sell']:
+    #             st += str(k) + ' '
+    #     if st != '':
+    #         itchat.send(str(i[0]) + st, 'filehelper')
+    #         itchat.send(str(i[0]) + st,toUserName='@9f545f6d5c3f89aa63956c3f386733232f7176569f71a26f477909c02828d735')
+    run()
     # f.close()
     # itchat.send("@fil@%s" % 'buysell.txt', 'filehelper')
     # for (name, fund_id) in ids.items():
