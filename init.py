@@ -27,7 +27,7 @@ user_mysql = 'root'
 pwd_mysql = '133499'
 db_name_mysql = 'wealth_db'
 
-engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' % (user_mysql, pwd_mysql, host_mysql, db_name_mysql), connect_args={'charset':'utf8'})
+#engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' % (user_mysql, pwd_mysql, host_mysql, db_name_mysql), connect_args={'charset':'utf8'})
 class get_mysql(object):
     '''链接数据库，并根据提供的数据库名称和关键词信息创建一个表格，表格存在就不创建'''
     def __init__(self,dbname,key,citys):
