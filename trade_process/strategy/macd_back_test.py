@@ -126,7 +126,7 @@ def select_Time_MA(stock_data, stockName,Avg):
         
         signal = SIGNAL_DEFAULT
         
-        if ema_close_short[t] > ema_close_short[t-1] and ema_close_short[t] > ema_close_long[t] \
+        if ema_close_short[t] > ema_close_short[t-1] and ema_close_short[t] > ema_close_vlong[t] \
                         and ema_close_short[t-1] < ema_close_vlong[t-1]:
             if bBuySignal:
                 signal = SIGNAL_BUY
