@@ -16,7 +16,7 @@ import tushare as ts
 import cwavelet
 
 #参数
-prama_ma_short = 2 # 短均线
+prama_ma_short = 3 # 短均线
 prama_ma_long = 7 # 长均线
 prama_ma_long20 = 15 # 长均线
 prama_ma_long30 = 20 # 长均线
@@ -211,7 +211,7 @@ def tread_track_backtest(code, df=None):
     # df = get_stock_k_line(code, date_start='2015-12-30', date_end='2016-05-05')
     # df=efund_mail2.get_histrydata(code,365)
     fundlist = efund_mail2.get_histrydata(code, 365)
-    df = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
+    df = pd.DataFrame(fundlist[::-1], columns=['date', 'close', 'countclose', 'change'])
     if len(df) == 0:
         return None
     # print df.head(2)
