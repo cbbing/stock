@@ -144,7 +144,7 @@ def select_Time_MA(stock_data, stockName,Avg):
                 bBuySignal = True    
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1
 
     
@@ -222,7 +222,7 @@ def select_Time_MACD(stock_data, stockName,Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1
 
     
@@ -302,7 +302,7 @@ def select_Time_DMA(stock_data, stockName,Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1
 
     
@@ -384,7 +384,7 @@ def select_Time_TRIX(stock_data, stockName,Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1
 
     
@@ -456,7 +456,7 @@ def select_Time_Mix(stock_data, stockName,Avg):
         
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1
                 
     print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
@@ -518,7 +518,7 @@ def select_Time_AMA(stock_data, stockName,Avg):
             #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
         signals.append(signal)
         if signal != 0:
-            #print 't:', t, '  signal:', signal
+            print 't:', t, '  signal:', signal
             tradeTimes += 1           
 
     # 成本
