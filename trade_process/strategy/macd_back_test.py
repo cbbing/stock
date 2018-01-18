@@ -103,6 +103,7 @@ def self_adaptive_ma(stock_data,Avg):
 def select_Time_MA(stock_data, stockName,Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
+    AVR_vLONG = Avg[2]
     start_money = 100000000
     now_count = 0
     now_money = start_money
@@ -113,9 +114,10 @@ def select_Time_MA(stock_data, stockName,Avg):
     close_price = stock_data['Adj Close'].get_values()
     
     #EMA 
-    ma_list = [AVR_SHORT, AVR_LONG]
+    ma_list = [AVR_SHORT, AVR_LONG,AVR_vLONG]
     ema_close_short = pd.ewma(close_price, span=ma_list[0])
     ema_close_long = pd.ewma(close_price, span=ma_list[1])
+    ema_close_vlong = pd.ewma(close_price, span=ma_list[2])
     
     signals = [0]*(ma_list[1]+1)
     tradeTimes = 0
@@ -125,7 +127,7 @@ def select_Time_MA(stock_data, stockName,Avg):
         signal = SIGNAL_DEFAULT
         
         if ema_close_short[t] > ema_close_short[t-1] and ema_close_short[t] > ema_close_long[t] \
-                        and ema_close_short[t-1] < ema_close_long[t-1]:
+                        and ema_close_short[t-1] < ema_vclose_long[t-1]:
             if bBuySignal:
                 signal = SIGNAL_BUY
                 now_count = (int)(start_money / close_price[t] /100)*100
@@ -173,6 +175,7 @@ def select_Time_MA(stock_data, stockName,Avg):
 def select_Time_MACD(stock_data, stockName,Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
+    AVR_vLONG = Avg[2]
     start_money = 100000000
     now_count = 0
     now_money = start_money
@@ -183,10 +186,11 @@ def select_Time_MACD(stock_data, stockName,Avg):
     close_price = stock_data['Adj Close'].get_values()
     
     #EMA 
-    ma_list = [AVR_SHORT, AVR_LONG]
+    ma_list = [AVR_SHORT, AVR_LONG,AVR_vLONG]
     ma_dea = 10
     ema_close_short = pd.ewma(close_price, span=ma_list[0])
     ema_close_long = pd.ewma(close_price, span=ma_list[1])
+    ema_close_vlong = pd.ewma(close_price, span=ma_list[2])
     
     
     dif_price = ema_close_short - ema_close_long
@@ -252,6 +256,7 @@ def select_Time_MACD(stock_data, stockName,Avg):
 def select_Time_DMA(stock_data, stockName,Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
+    AVR_vLONG = Avg[2]
     start_money = 100000000
     now_count = 0
     now_money = start_money
@@ -262,10 +267,11 @@ def select_Time_DMA(stock_data, stockName,Avg):
     close_price = stock_data['Adj Close'].get_values()
     
     #MA 
-    ma_list = [AVR_SHORT, AVR_LONG]
+    ma_list = [AVR_SHORT, AVR_LONG,AVR_vLONG]
     ma_dea = 10
     ma_close_short = pd.rolling_mean(close_price, ma_list[0])
     ma_close_long = pd.rolling_mean(close_price, ma_list[1])
+    ma_close_vlong = pd.rolling_mean(close_price, ma_list[2])
     
     
     dma_price = ma_close_short - ma_close_long
@@ -598,7 +604,7 @@ def macdmain(stockList):
         fundlist = efund_mail2.get_histrydata(stockName, 365)
         stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
-        Avg=[5,12]   
+        Avg=[5,12,40]   
         print u'-- MA 策略 --'
         select_Time_MA(stock_data, stockName,Avg)
 
@@ -636,7 +642,7 @@ if __name__ == "__main__":
         #processEMA(stockCsvPath, stockCsvNewPath)
         stock_data = pd.read_csv(stockCsvPath)
         #self_adaptive_ma(stock_data)
-        Avg=[5,10]   
+        Avg=[5,10,40]   
         print u'-- MA 策略 --'
         select_Time_MA(stock_data, stockName,Avg)
 
