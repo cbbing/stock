@@ -604,9 +604,10 @@ def macdmain(stockList):
         fundlist = efund_mail2.get_histrydata(stockName, 365)
         stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
-        Avg=[5,12,40]   
+        Avg=[4,12,40]   
+        Avg1=[3,11,40]
         print u'-- MA 策略 --'
-        select_Time_MA(stock_data, stockName,Avg)
+        select_Time_MA(stock_data, stockName,Avg1)
 
         print u'-- MACD 策略 --'
         select_Time_MACD(stock_data, stockName,Avg)
