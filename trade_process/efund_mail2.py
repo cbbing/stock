@@ -19,6 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from email.mime.application import MIMEApplication
 from fund_zf import main_zf
+from trade_process.strategy.macd_back_test import macdmain
 # from numpy import mean, ptp, var, std
 
 import requests
@@ -63,7 +64,7 @@ def get_type(fund_code, all_fund_list):
 def get_jingzhi(strfundcode, strdate,stredate):
     try:
         url = 'http://fund.eastmoney.com/f10/F10DataApi.aspx?type=lsjz&code=' + str(strfundcode) + '&page=1&per=1000&sdate=' + str(strdate) + '&edate=' + str(stredate)
-        # print u'数据链接：'+url + '\n'
+        print u'数据链接：'+url + '\n'
         response = urllib2.urlopen(url)
     except urllib2.HTTPError, e:
         print e
@@ -235,7 +236,7 @@ def jizhi(funddata):
     data30days = [x[1] for x in funddata[:-30:-2]]
     jizhipoints['30daysmax'] = [data30days.index(max(data30days)),max(data30days)]
     jizhipoints['30daysmin'] = [data30days.index(min(data30days)),min(data30days)]
-    data180days = [x[1] for x in funddata[:-200:-2]]
+    data180days = [x[1] for x in funddata[:-180:-2]]
     jizhipoints['180daysmax'] = [data180days.index(max(data180days)), max(data180days)]
     jizhipoints['180daysmin'] = [data180days.index(min(data180days)), min(data180days)]
     data5days = [x[1] for x in funddata[:-5:-2]]
@@ -246,8 +247,9 @@ def jizhi(funddata):
 #交易策略监测
 def celue(funddata,jizhipoints):
     todaydata = funddata[0]
-    data5days = [x[1] for x in funddata[:5:1]]
+    data5days = [x[1] for x in funddata[:6:1]]
     change = [x[3] for x in funddata[:5:1]]
+    change7 = [x[3] for x in funddata[:7:1]]
     change12days= [x[3] for x in funddata[:90:1]]
     if stdDeviation(change12days)<0.3:
         r=1.005;rmax=0.995
@@ -278,9 +280,9 @@ def celue(funddata,jizhipoints):
     #     sell_point.append({'today>0.9*30max': str(todaydata[1] )+str('<=')+str( rmax*jizhipoints['5daysmax'][1])})
 
     # def change_fenxi(change):
-    if(sum(change)/len(change)>=0.5):
+    if(sum(change)/len(change)>=0.46):
         sell_point.append({'mean5up':round(sum(change)/len(change),5)})
-    elif(sum(change)/len(change)<=-0.5):
+    elif(sum(change)/len(change)<=-0.46):
         buy_points.append({'mean5up':round(sum(change)/len(change),5)})
 
     big=[];small=[]
@@ -291,27 +293,27 @@ def celue(funddata,jizhipoints):
             elif (change[i]<0):
                 small.append(change[i])
         if len(big)>=4 and change[0]<0.2  :
-            sell_point.append({'go up 4days':big})
+            sell_point.append({'go up 4days':change7})
         # elif (change[0]<change[1] and(change[0]<0.04)and len(big)>=3):
         #     sell_point.append({u'go up 4days': big})
         if (len(small)>=4 and change[0]>0) or (len(small)>=3 and change[0]<-0.5 and change[1]<0.1):
-            buy_points.append({'go down 3days':small})
+            buy_points.append({'go down 3days':change7})
     return {'sell':sell_point,'buy':buy_points}
 
 def main_run(all_fund_list):
     code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-    name = ['eGold', 'eoil', '创业板', '上证50', '沪深300', '恒生', '易方达纳斯达克100', '安心b']
+
     buysell = []
     for i in code:
         # save(strfundcode=i ,numdays=365*1)
-        sb=fenxi(strfundcode=i, numdays=425 * 1)
+        sb=fenxi(strfundcode=i, numdays=365 * 1)
         if sb:
             buysell.append([i,sb])
     for i in all_fund_list[0:50]:
         # save(strfundcode=i ,numdays=365*1)
-        sb=fenxi(strfundcode=i, numdays=425 * 1)
+        sb=fenxi(strfundcode=i, numdays=365 * 1)
         if sb:
             buysell.append([i,sb])
     return buysell
@@ -370,7 +372,7 @@ def send_email(text):
 
         # 邮件正文内容
         # print str(text[0])
-        realText = sendmsg #str(text)  #'\n'+str(subject_time)+'：主人，有人来招人啦！^—^\n'+ '海投网：'+str(text[1])+'.'#+str(text[0])#'地大就业网招聘公告：'+str(text1[1])+'地大就业网gis等招聘信息：'+str(text2[1])+'.'#+str(text1[0])+'\n'+str(text2[1])+'\n'+str(text2[0])
+        realText = text#sendmsg #str(text)  #'\n'+str(subject_time)+'：主人，有人来招人啦！^—^\n'+ '海投网：'+str(text[1])+'.'#+str(text[0])#'地大就业网招聘公告：'+str(text1[1])+'地大就业网gis等招聘信息：'+str(text2[1])+'.'#+str(text1[0])+'\n'+str(text2[1])+'\n'+str(text2[0])
         print realText
         msg.attach(MIMEText(realText, 'plain', 'utf-8'))
 
@@ -443,11 +445,15 @@ def deb_print():
     M = now[12:14]
     S = now[15:]
     # print now
-    #print H,M, S
+    print H,M, S
     return H,M, S
 
 def check_time(H, M,S):
-    if(H == "14" and int(M) == 35  and S == "20"):#(H == "14" and M == "08" and S == "10") or
+    strtoday1 = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
+    sdatetime = datetime.datetime.strptime(strtoday1, '%Y-%m-%d')
+    sdatetime.isoweekday()
+    #if sdatetime.isoweekday() == 7:
+    if(H == "14" and int(M) == 30  and S == "20")and(sdatetime.isoweekday() != 7)and(sdatetime.isoweekday() != 6):#(H == "14" and M == "08" and S == "10") or
         # itchat.auto_login(hotReload=True)
         # itchat.run
         # curTime =  time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
@@ -475,35 +481,25 @@ def check_time(H, M,S):
         #         itchat.send(str(i[0]) + st+('  http://fund.eastmoney.com/%s.html'%i[0][0]) +('--  http://www.efunds.com.cn/html/fund/%s_fundinfo.htm'%i[0][0]), 'filehelper')
         #         itchat.send(str(i[0]) + st, toUserName='@9f545f6d5c3f89aa63956c3f386733232f7176569f71a26f477909c02828d735')
     s.enter(1, 1, check_time, deb_print())
-    
-def main1():
-    a=1
-    while True:
-        now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
-        # date = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
-        H = now[9:11]
-        M = now[12:14]
-        S = now[15:]
-        # print H,S,M
-        print 'Start:'+'13:05' +' and 14:35 '+'send to email.'+"\n" +'please wait:'
 
-        #    print time.localtime()
-        #    print time.strftime("%y-%m-%d %H:%M:%S",time.localtime())
-        # xiaozhao = Xiaozhao()
-        # xiaozhao.send_email()
-        s.enter(1, 1, check_time, deb_print())
-        s.run()
-def run():
+
+def main1():
     now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     H = now[9:11]
     M = now[12:14]
     S = now[15:]
-    all_fund_list = main_zf()
-    if(int(H)  ):#>= 19(H == "14" and M == "08" and S == "10") or
+    code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
+            ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
+            ['161125', 'SPX500']]
+    all_fund_list = main_zf(code)
+    sign=macdmain(code)
+    if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
         buysell1 = main_run(all_fund_list)
         print(str(buysell1))
-        sendmsg=''
+        sendmsg = ''
         # f = open("buysell.txt",'a')
+        for j in sign:
+            sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+'\n'
         for i in buysell1:
             # write_str =  str(i) + '\n'
             # f.write(write_str)
@@ -512,17 +508,33 @@ def run():
                 st = ' 买 '
                 for j in i[1]['buy']:
                     for h in j:
-                        st += h + str(j[h])+ ' '
+                        st += h + str(j[h]) + ' '
             elif i[1]['sell'] != []:
                 st += ' 卖 '
                 for k in i[1]['sell']:
                     for t in k:
-                        st += t + str(k[t])+ ' '
+                        st += t + str(k[t]) + ' '
             if st != ' ':
-                sendmsg +=i[0][0]+','+i[0][1] + st+(' http://fund.eastmoney.com/%s.html'%i[0][0]) +('   http://www.efunds.com.cn/html/fund/%s_fundinfo.htm'%i[0][0])+'\n'
+                sendmsg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0]) + (
+                '   http://www.efunds.com.cn/html/fund/%s_fundinfo.htm' % i[0][0]) + '\n'
         # print sendmsg
         send_email(sendmsg)
-    main1()
+    while True:
+        now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+        # date = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
+        H = now[9:11]
+        M = now[12:14]
+        S = now[15:]
+        # print H,S,M
+        print 'Start:'+'13:05' +' and 14:30 '+'send to email.'+"\n" +'please wait:'
+
+        #    print time.localtime()
+        #    print time.strftime("%y-%m-%d %H:%M:%S",time.localtime())
+        # xiaozhao = Xiaozhao()
+        # xiaozhao.send_email()
+        s.enter(1, 1, check_time, deb_print())
+        s.run()
+
 if __name__=='__main__':
     # itchat.auto_login(hotReload=True)
     # itchat.run
@@ -546,7 +558,8 @@ if __name__=='__main__':
     #     if st != '':
     #         itchat.send(str(i[0]) + st, 'filehelper')
     #         itchat.send(str(i[0]) + st,toUserName='@9f545f6d5c3f89aa63956c3f386733232f7176569f71a26f477909c02828d735')
-    run()
+    all_fund_list = main_zf()
+    main1()
     # f.close()
     # itchat.send("@fil@%s" % 'buysell.txt', 'filehelper')
     # for (name, fund_id) in ids.items():

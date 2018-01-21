@@ -5,11 +5,14 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
+import os,sys
 import numpy as np
 from data_process.download_stock import downloadAllHistoryAShareData
 from trade_process import efund_mail2
-
+from pyevolve import G1DList, GSimpleGA, Selectors, Scaling
+from pyevolve import Mutators, Initializators,GAllele
+reload(sys)
+sys.setdefaultencoding('utf-8')
 # AVR_SHORT = 12
 # AVR_LONG = 40
  
@@ -100,7 +103,7 @@ def self_adaptive_ma(stock_data,Avg):
      
 
 # MA指标择时  (回测）
-def select_Time_MA(stock_data, stockName,Avg):
+def select_Time_MA(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     AVR_vLONG = Avg[2]
@@ -121,7 +124,8 @@ def select_Time_MA(stock_data, stockName,Avg):
     
     signals = [0]*(ma_list[1]+1)
     tradeTimes = 0
-    bBuySignal = True 
+    bBuySignal = True
+    currentSignal=[]
     for t in range(ma_list[1]+1, len(close_price)):
         
         signal = SIGNAL_DEFAULT
@@ -144,15 +148,15 @@ def select_Time_MA(stock_data, stockName,Avg):
                 bBuySignal = True    
         signals.append(signal)
         if signal != 0:
-            
             print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
+            if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
+                currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
 
-    
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  ,str(Avg)
     stock_data['SIGNAL_MA'] = signals
-    
+    return [(now_money+now_count * close_price[-1]-start_money)/start_money*100,currentSignal]
 #     fig = plt.figure(facecolor='white')
 #     left, width = 0.1, 0.8
 #     rect1 = [left, 0.5, width, 0.4]
@@ -173,7 +177,7 @@ def select_Time_MA(stock_data, stockName,Avg):
     #stock_data.sort('date', ascending=False, inplace=True)
     
 # MACD指标择时 (回测）
-def select_Time_MACD(stock_data, stockName,Avg):
+def select_Time_MACD(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     AVR_vLONG = Avg[2]
@@ -200,7 +204,8 @@ def select_Time_MACD(stock_data, stockName,Avg):
     
     signals = [0]*(ma_list[1]+1)
     tradeTimes = 0
-    bBuySignal = True 
+    bBuySignal = True
+    currentSignal=[]
     for t in range(ma_list[1]+1, len(close_price)):
         
         signal = SIGNAL_DEFAULT
@@ -225,13 +230,13 @@ def select_Time_MACD(stock_data, stockName,Avg):
         if signal != 0:
             print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
-
+            if (t<=len(close_price))and(t>=(len(close_price)-4)):
+                currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
     
-    
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  ,str(Avg)
     stock_data['SIGNAL_MACD'] = signals
-    
+    return [(now_money+now_count * close_price[-1]-start_money)/start_money*100,currentSignal]
 #     fig = plt.figure(facecolor='white')
 #     left, width = 0.1, 0.8
 #     rect1 = [left, 0.5, width, 0.4]
@@ -251,10 +256,10 @@ def select_Time_MACD(stock_data, stockName,Avg):
     # 将数据按照交易日期从近到远排序
     #stock_data.sort('date', ascending=False, inplace=True)
  
-    return dif_price, dea_price, macd_price
+    # return dif_price, dea_price, macd_price
 
 # DMA指标择时 (回测）
-def select_Time_DMA(stock_data, stockName,Avg):
+def select_Time_DMA(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     AVR_vLONG = Avg[2]
@@ -280,7 +285,8 @@ def select_Time_DMA(stock_data, stockName,Avg):
     
     signals = [0]*(ma_list[1]+1)
     tradeTimes = 0
-    bBuySignal = True 
+    bBuySignal = True
+    currentSignal=[]
     for t in range(ma_list[1]+1, len(close_price)):
         
         signal = SIGNAL_DEFAULT
@@ -305,13 +311,13 @@ def select_Time_DMA(stock_data, stockName,Avg):
         if signal != 0:
             print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
+            if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
+                currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
 
-    
-    
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  ,str(Avg)
     stock_data['SIGNAL_DMA'] = signals
-    
+    return [(now_money + now_count * close_price[-1] - start_money) / start_money * 100,currentSignal]
 #     fig = plt.figure(facecolor='white')
 #     left, width = 0.1, 0.8
 #     rect1 = [left, 0.5, width, 0.4]
@@ -332,7 +338,7 @@ def select_Time_DMA(stock_data, stockName,Avg):
     #stock_data.sort('date', ascending=False, inplace=True)
  
 # DMA指标择时 (回测）
-def select_Time_TRIX(stock_data, stockName,Avg):
+def select_Time_TRIX(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     start_money = 100000000
@@ -341,7 +347,6 @@ def select_Time_TRIX(stock_data, stockName,Avg):
     
     # 将数据按照交易日期从远到近排序
     # stock_data.sort('Date', inplace=True)
-    
     close_price = stock_data['Adj Close'].get_values()
     
     #EMA 
@@ -358,15 +363,14 @@ def select_Time_TRIX(stock_data, stockName,Avg):
         trixsList.append(trix)
     trixs = np.array(trixsList)    
     maxtrix = pd.rolling_mean(trixs, ma_list[1])
-    
-    
+
     signals = [0]*(ma_list[1]+1)
     tradeTimes = 0
-    bBuySignal = True 
+    bBuySignal = True
+    currentSignal=[]
     for t in range(ma_list[1]+1, len(close_price)):
         
         signal = SIGNAL_DEFAULT
-        
         if trixs[t] > trixs[t-1] and trixs[t] > maxtrix[t] \
                                         and trixs[t-1] < maxtrix[t-1]:
             if bBuySignal:
@@ -387,16 +391,16 @@ def select_Time_TRIX(stock_data, stockName,Avg):
         if signal != 0:
             print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
+            if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
+                currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
 
-    
-    
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  ,str(Avg)
     stock_data['SIGNAL_TRIX'] = signals
-
+    return [(now_money + now_count * close_price[-1] - start_money) / start_money * 100,currentSignal]
 
 # 组合择时指标 (回测）
-def select_Time_Mix(stock_data, stockName,Avg):
+def select_Time_Mix(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     start_money = 100000000
@@ -460,12 +464,12 @@ def select_Time_Mix(stock_data, stockName,Avg):
             #print 't:', t, '  signal:', signal
             tradeTimes += 1
                 
-    print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
         u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
     stock_data['SIGNAL_MIX'] = signals
-
+    return (now_money + now_count * close_price[-1] - start_money) / start_money * 100
 # AMA指标择时
-def select_Time_AMA(stock_data, stockName,Avg):
+def select_Time_AMA(stock_data, stockName,*Avg):
     AVR_SHORT = Avg[0]
     AVR_LONG = Avg[1]
     percentage = 0.1
@@ -519,17 +523,17 @@ def select_Time_AMA(stock_data, stockName,Avg):
             #print u"股票价格/持股数/剩余金额：",close_price[t], '/',  now_count, '/', now_money
         signals.append(signal)
         if signal != 0:
-            #print 't:', i, '  signal:', signal
+            # print 't:',  str(stock_data.ix[i, 'Date']), '  signal:', signal
             tradeTimes += 1           
 
     # 成本
-    print u'盈利', record_sale + now_count * close_price[-1] - record_buy
+    # print stockName[0],stockName[1],u'盈利', record_sale + now_count * close_price[-1] - record_buy
     
-#     print stockName, u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
-#         u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  
+    print stockName[0],stockName[1], u"收益率：", (now_money+now_count * close_price[-1]-start_money)/start_money*100, '%\t' \
+        u"交易次数", tradeTimes, u" 最新市值：", now_money+now_count * close_price[-1]  ,str(Avg)
     stock_data['SIGNAL_AMA'] = signals
-    
-    return ama_price
+    # return ama_price
+    return (now_money + now_count * close_price[-1] - start_money) / start_money * 100
 
 # 获取平方平滑系数
 def getConstaint(prices):
@@ -557,7 +561,52 @@ def getMAStrategy(stockCsvPath, stockName, strategyName='MACD'):
         return select_Time_TRIX(stock_data, stockName)
     elif strategyName == 'AMA':
         return select_Time_AMA(stock_data, stockName)
-    
+
+def Grid_Constructor(numline,numParm,data):
+    alleles = GAllele.GAlleles()
+    for i in range(0, numline*numParm):
+        alleles.add(GAllele.GAlleleRange(data[i][0], data[i][1]))
+    return alleles
+
+def func(fitness,strategyName,stock_data, stockName):
+    def fitness_function(chromosome):
+        score = 0.0
+        if fitness == 'abs':
+            if strategyName == 'MACD':
+                score = select_Time_MACD(stock_data, stockName, *chromosome)[0]
+            elif strategyName == 'MA':
+                score = select_Time_MA(stock_data, stockName, *chromosome)[0]
+            elif strategyName == 'DMA':
+                score = select_Time_DMA(stock_data, stockName, *chromosome)[0]
+            elif strategyName == 'TRIX':
+                score = select_Time_TRIX(stock_data, stockName, *chromosome)[0]
+            elif strategyName == 'AMA':
+                score = select_Time_AMA(stock_data, stockName, *chromosome)
+        return score
+    return fitness_function
+def cal_opt(numParm,fintness,funcname,func,stock_data, stockName):
+    datarange=[[1,20],[6,60],[10,100]]
+    datarange=datarange[:numParm]
+    genome = G1DList.G1DList(numParm)
+    genome.evaluator.set(func(fintness,funcname,stock_data, stockName))
+    # genome.setParams(allele=Grid_Constructor(numline,data1))
+    genome.setParams(allele=Grid_Constructor(1,numParm,datarange))
+    genome.initializator.set(Initializators.G1DListInitializatorAllele)
+    genome.mutator.set(Mutators.G1DListMutatorAllele)
+
+    ga = GSimpleGA.GSimpleGA(genome, seed=400)
+    ga.setPopulationSize(45)
+    ga.setGenerations(45)
+    ga.setCrossoverRate(0.8)
+    ga.setMutationRate(0.2)
+    ga.selector.set(Selectors.GRankSelector)
+    # ga.terminationCriteria.set(GSimpleGA.FitnessStatsCriteria)
+    # Change the scaling method
+    pop = ga.getPopulation()
+    pop.scaleMethod.set(Scaling.SigmaTruncScaling)
+    ga.evolve(freq_stats=10)
+    best = ga.bestIndividual()
+    return [best.genomeList,round(best.score,5)]
 # 执行策略 
 def run(stockCsvPath, stockName):
     if os.path.exists(stockCsvPath) == False:
@@ -586,12 +635,19 @@ def run(stockCsvPath, stockName):
     select_Time_AMA(stock_data, stockName)
             
     print '\n'
+def match(select_method,stockName,lines):
+    contmatch=[]
+    for line in lines:
+        if line != '\n':
+            if(stockName[0] == line.split('|')[1])and(select_method == line.split('|')[0]):
+                contmatch.append([line.split('|')[0],line.split('|')[3]])
+    return contmatch
 def macdmain(stockList):
     print "main begin"
     # stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
     # downloadAllHistoryAShareData(stockList)
     # stockList = ['000725']
-    
+    buysell=[]
     for stockName in stockList:
         # if stockName != '002600':
         #     continue
@@ -602,40 +658,72 @@ def macdmain(stockList):
         # stockCsvNewPath = stockName + '_macd.csv'
         # processEMA(stockCsvPath, stockCsvNewPath)
         # stock_data = pd.read_csv(stockCsvPath)
-        fundlist = efund_mail2.get_histrydata(stockName, 365)
+        stockTxtNewPath = "./stockdata\\"+ 'GAOpt.txt'
+        fundlist = efund_mail2.get_histrydata(stockName, 190)
         stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
-        Avg=[4,12,40]   
-        Avg1=[3,11,40]
-        print u'-- MA 策略 --'
-        select_Time_MA(stock_data, stockName,Avg1)
-
-        print u'-- MACD 策略 --'
-        select_Time_MACD(stock_data, stockName,Avg)
-
-        print u'-- DMA 策略 --'
-        select_Time_DMA(stock_data, stockName,Avg)
-
-        print u'-- TRIX 策略 -->'
-        select_Time_TRIX(stock_data, stockName,Avg)
-
-        print u'-- 组合策略 --'
-        select_Time_Mix(stock_data, stockName,Avg)
-
-        print u'-- AMA策略 --'
-        select_Time_AMA(stock_data, stockName,Avg)
-
+        Avg=([4,12,40])
+        Avg1=([3,8,40])
+        # select_method=['MA','MACD','DMA','TRIX','AMA']
+        select_method = [ 'DMA','MA','MACD','TRIX']
+        AvgParm=[]
+        cal=''
+        for i in select_method:
+            file_to_read=open(stockTxtNewPath, 'r')
+            lines = file_to_read.readlines()  # 整行读取数据
+            if not lines:
+                break
+                pass
+            else:
+                contmatch=match(i,stockName,lines)
+                if (cal=='new')or(len(contmatch)==0):
+                    best=cal_opt(3, 'abs', i, func, stock_data, stockName)
+                    # AvgParm.append(best)
+                    f = open(stockTxtNewPath, 'a')
+                    f.write(str(i)+'|')
+                    f.write(str(stockName[0])+'|'+stockName[1].encode('gb2312')+'|')
+                    f.write(str(best[0]).split('[')[1].split(']')[0]+'|'+str(best[1]))
+                    f.write('\n')
+                    f.close()
+                    Avg = best[0]
+                else:
+                    # AvgParm.append([int(contmatch[0].split(',')[0]),int(contmatch[0].split(',')[1]),int(contmatch[0].split(',')[2])])
+                    Avg = [int(contmatch[0][1].split(',')[0]),int(contmatch[0][1].split(',')[1]),int(contmatch[0][1].split(',')[2])]
+            result=None
+            if(i=='MA'):
+                print u'-- MA 策略 --'
+                result=select_Time_MA(stock_data, stockName,*Avg)
+                if(len(result[1])):
+                    buysell.append([stockName,i,result])
+            if (i == 'MACD'):
+                print u'-- MACD 策略 --'
+                result=select_Time_MACD(stock_data, stockName, *Avg)
+                if (len(result[1])):
+                    buysell.append([stockName, i, result])
+            if (i == 'DMA'):
+                print u'-- DMA 策略 --'
+                result=select_Time_DMA(stock_data, stockName,*Avg)
+                if (len(result[1])):
+                    buysell.append([stockName, i, result])
+            if (i == 'TRIX'):
+                print u'-- TRIX 策略 -->'
+                result=select_Time_TRIX(stock_data, stockName,*Avg)
+                if (len(result[1])):
+                    buysell.append([stockName, i, result])
+            # print u'-- 组合策略 --'
+            # select_Time_Mix(stock_data, stockName,*Avg)
+            #
+            # print u'-- AMA策略 --'
+            # select_Time_AMA(stock_data, stockName,*Avg)
         print '\n'
     print "main end"
+    return buysell
     
 if __name__ == "__main__":
     print "main begin"
     stockList=['000725','000783','002167','002505','002600','300315','600000','600011','600048','601001']
     downloadAllHistoryAShareData(stockList)
-    #stockList = ['000725']
     for stockName in stockList:
-        # if stockName != '002600':
-        #     continue
         stockCsvPath = os.path.pardir +"\\stockdata\\" + stockName + '.csv'
         #stockCsvPath = stockName + '.csv'
         if os.path.exists(stockCsvPath) == False:

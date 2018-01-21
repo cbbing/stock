@@ -49,7 +49,7 @@ def main_zf():
 
     # 获取所有基金列表 用于查询类型
     all_fund = []
-    fundlist_files = glob.glob('fundlist-*.txt')
+    fundlist_files = glob.glob('./trade_process/fundlist-*.txt')
     file_object = open(fundlist_files[0], 'r')
     try:
         all_funds_txt = file_object.read()
