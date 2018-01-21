@@ -499,7 +499,8 @@ def main1():
         sendmsg = ''
         # f = open("buysell.txt",'a')
         for j in sign:
-            sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+'\n'
+            #sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+'\n'
+            sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+','+ (' http://fund.eastmoney.com/%s.html' % j[0][0])+'\n'
         for i in buysell1:
             # write_str =  str(i) + '\n'
             # f.write(write_str)
