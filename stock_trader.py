@@ -3,6 +3,7 @@ from trade_process.strategy.macd_back_test import macdmain
 from trade_process.strategy.tread_tracking import stock_trader_main
 from trade_process.strategy.macd_live_test import macd_live_main
 from trade_process.efund_mail2 import main1
+from trade_process.fund_zf import main_zf
 if __name__ == '__main__':
     stockList = ['000725', '000783', '002167', '002505', '002600', '300315', '600000', '600011', '600048', '601001']
     ChinaStockIndexList = [
@@ -18,6 +19,9 @@ if __name__ == '__main__':
     code = [ ['160222', '国泰国证食品饮料行业指数分级'],['110022', 'eConsumption '],['110003', 'eSSE50'], ['110020', 'HS300'], ['110028', 'anxinB'],
              ['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'],
                     ['110031', 'eHSI'], ['161130', 'eNASDAQ100'],['161125', 'SPX500']]
+    fundlist=main_zf()
+    for i in range(30,70):
+        code.append(fundlist[i])
     #均线策略
     macd=macdmain(code)
     print macd
