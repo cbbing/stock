@@ -491,7 +491,7 @@ def main1(sign):
     code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-    all_fund_list = main_zf(code)
+    all_fund_list = main_zf()
     #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
         buysell1 = main_run(all_fund_list)
