@@ -148,7 +148,7 @@ def select_Time_MA(stock_data, stockName,*Avg):
                 bBuySignal = True    
         signals.append(signal)
         if signal != 0:
-            print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
+            #print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
             if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
                 currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
@@ -228,7 +228,7 @@ def select_Time_MACD(stock_data, stockName,*Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
+            #print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
             if (t<=len(close_price))and(t>=(len(close_price)-4)):
                 currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
@@ -309,7 +309,7 @@ def select_Time_DMA(stock_data, stockName,*Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
+            #print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
             if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
                 currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
@@ -389,7 +389,7 @@ def select_Time_TRIX(stock_data, stockName,*Avg):
                 bBuySignal = True      
         signals.append(signal)
         if signal != 0:
-            print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
+            #print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
             if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
                 currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
@@ -595,8 +595,8 @@ def cal_opt(numParm,fintness,funcname,func,stock_data, stockName):
     genome.mutator.set(Mutators.G1DListMutatorAllele)
 
     ga = GSimpleGA.GSimpleGA(genome, seed=400)
-    ga.setPopulationSize(45)
-    ga.setGenerations(45)
+    ga.setPopulationSize(40)
+    ga.setGenerations(40)
     ga.setCrossoverRate(0.8)
     ga.setMutationRate(0.2)
     ga.selector.set(Selectors.GRankSelector)
