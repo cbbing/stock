@@ -19,7 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from email.mime.application import MIMEApplication
 from fund_zf import main_zf
-from strategy.macd_back_test import macdmain
+# from strategy.macd_back_test import macdmain
 # from numpy import mean, ptp, var, std
 
 import requests
@@ -483,7 +483,7 @@ def check_time(H, M,S):
     s.enter(1, 1, check_time, deb_print())
 
 
-def main1():
+def main1(sign):
     now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     H = now[9:11]
     M = now[12:14]
@@ -492,7 +492,7 @@ def main1():
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
     all_fund_list = main_zf(code)
-    sign=macdmain(code)
+    #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
         buysell1 = main_run(all_fund_list)
         print(str(buysell1))
