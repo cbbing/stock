@@ -19,7 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from email.mime.application import MIMEApplication
 from fund_zf import main_zf
-from trade_process.strategy.macd_back_test import macdmain
+from strategy.macd_back_test import macdmain
 # from numpy import mean, ptp, var, std
 
 import requests
