@@ -658,7 +658,8 @@ def macdmain(stockList):
         # stockCsvNewPath = stockName + '_macd.csv'
         # processEMA(stockCsvPath, stockCsvNewPath)
         # stock_data = pd.read_csv(stockCsvPath)
-        stockTxtNewPath = "./stockdata\\"+ 'GAOpt.txt'
+        stockTxtNewPath = "./stockdata/"+ 'GAOpt.txt'
+        print stockTxtNewPath
         fundlist = efund_mail2.get_histrydata(stockName, 190)
         stock_data = pd.DataFrame(fundlist[::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
         # self_adaptive_ma(stock_data)
