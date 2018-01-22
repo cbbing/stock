@@ -20,7 +20,7 @@ if __name__ == '__main__':
              ['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'],
                     ['110031', 'eHSI'], ['161130', 'eNASDAQ100'],['161125', 'SPX500']]
     fundlist=main_zf()
-    for i in range(30,70):
+    for i in range(40,80):
         code.append(fundlist[i])
     #均线策略
     macd=macdmain(code)
