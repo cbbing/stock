@@ -21,6 +21,6 @@ if __name__ == '__main__':
     #均线策略
     macd=macdmain(code)
     print macd
-    main1()
+    main1(macd)
     # stock_trader_main(code)
     # macd_live_main(code)
