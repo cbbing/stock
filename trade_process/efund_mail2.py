@@ -19,7 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from email.mime.application import MIMEApplication
 from fund_zf import main_zf
-# from strategy.macd_back_test import macdmain
+from strategy.macd_back_test import macdmain,mainStock
 # from numpy import mean, ptp, var, std
 
 import requests
@@ -189,14 +189,14 @@ def get_histrydata(strfundcode,numdays):
         print 'date input error!\n'
 
     jingzhimin = get_jingzhi(strfundcode[0], strsdate, stredate)
-    if todayvalue != None:
+    if todayvalue != None and edatetime.isoweekday() != 7 and edatetime.isoweekday() != 7:
         jingzhimin.insert(0, [tdatetime, todayvalue[0], todayvalue[1], todayvalue[2]])
     return jingzhimin
 
 #计算交易策略
-def fenxi(strfundcode,numdays):
+def fenxi(strfundcode,jingzhimin,method):
     #获取历史数据
-    jingzhimin=get_histrydata(strfundcode,numdays)
+    # jingzhimin=get_histrydata(strfundcode,numdays)
     years = [x[0] for x in jingzhimin]
     price = [x[1] for x in jingzhimin]
     changeprice = [x[3]/x[1] for x in jingzhimin]
@@ -204,7 +204,7 @@ def fenxi(strfundcode,numdays):
     # plt.plot(years, changeprice, 'g',label='change')
     starty = [0 for x in jingzhimin]
     jizhipoints=jizhi(jingzhimin)
-    celue_point=celue(jingzhimin,jizhipoints)
+    celue_point=celue(jingzhimin,jizhipoints,method)
     # change_fenxi(change5days)
     return celue_point
 
@@ -245,78 +245,98 @@ def jizhi(funddata):
     return jizhipoints
 
 #交易策略监测
-def celue(funddata,jizhipoints):
+def celue(funddata,jizhipoints,method):
     todaydata = funddata[0]
-    data5days = [x[1] for x in funddata[:6:1]]
+    data5days = [x[1] for x in funddata[:5:1]]
     change = [x[3] for x in funddata[:5:1]]
     change7 = [x[3] for x in funddata[:7:1]]
     change12days= [x[3] for x in funddata[:90:1]]
     if stdDeviation(change12days)<0.3:
-        r=1.005;rmax=0.995
+        r=1.005;rmax=1.002
     elif stdDeviation(change12days) > 0.6:
-        r = 1.005;rmax = 0.995
+        r = 1.009;rmax = 1.002
     else:
-        r = 1.005;rmax = 0.995
+        r = 1.005;rmax = 1.002
     buy_points = []
     sell_point = []
 
     #根据净值比较
-    if(todaydata[1]<=r*jizhipoints['allmin'][1]):
-        buy_points.append({'today<1.02*allmin':str(todaydata[1])+str('<=')+str(r*jizhipoints['allmin'][1])})
-    elif(todaydata[1]<=r*jizhipoints['180daysmin'][1]):
-        buy_points.append({'today<1.02*180min': str(todaydata[1])+str('<=')+str(r*jizhipoints['180daysmin'][1])})
-    # elif(todaydata[1]<=r*jizhipoints['30daysmin'][1]):
-    #     buy_points.append({'today<1.02*30min': str(todaydata[1] )+str('<=')+str( r*jizhipoints['30daysmin'][1])})
+    if(todaydata[1]<=r*jizhipoints['allmin'][1])and(sum(change)<-1.1):
+        buy_points.append({'估值接近1年最小净值':str(todaydata[1])+str('<=')+str(r*jizhipoints['allmin'][1])})
+    elif(todaydata[1]<=r*jizhipoints['180daysmin'][1])and(sum(change)<-1.1):
+        buy_points.append({'估值接近180天最小净值': str(todaydata[1])+str('<=')+str(r*jizhipoints['180daysmin'][1])})
+    elif(todaydata[1]<=r*jizhipoints['30daysmin'][1])and(sum(change)<-0.7):
+        buy_points.append({'估值接近30天最小净值': str(todaydata[1] )+str('<=')+str( r*jizhipoints['30daysmin'][1])})
     # elif (todaydata[1] <= r*jizhipoints['5daysmin'][1]):
     #     buy_points['today<1.02*5min'] = str(todaydata[1] )+str('<=')+str( r*jizhipoints['5daysmin'][1])
     #----------------------------
-    elif (todaydata[1] >= rmax*jizhipoints['allmax'][1]):
-        sell_point.append({'today>0.98*allmax': str(todaydata[1] )+str('>=')+str( rmax*jizhipoints['allmax'][1])})
-    elif (todaydata[1] >= rmax*jizhipoints['180daysmax'][1]):
-        sell_point.append({'today>0.98*180max': str(todaydata[1] )+str('>=')+str( rmax*jizhipoints['180daysmax'][1])})
+    elif (todaydata[1] >= rmax*jizhipoints['allmax'][1])and method=='general':
+        sell_point.append({'估值接近1年最大净值': str(todaydata[1] )+str('>=')+str( rmax*jizhipoints['allmax'][1])})
+    elif (todaydata[1] >= rmax*jizhipoints['180daysmax'][1])and method=='general':
+        sell_point.append({'估值接近180天最大净值': str(todaydata[1] )+str('>=')+str( rmax*jizhipoints['180daysmax'][1])})
     # elif (todaydata[1] >= rmax*jizhipoints['30daysmax'][1]):
     #     sell_point.append({'today>0.9*30max': str(todaydata[1] )+str('<=')+str( rmax*jizhipoints['30daysmax'][1])})
     # elif (todaydata[1] >= rmax*jizhipoints['5daysmax'][1]):
     #     sell_point.append({'today>0.9*30max': str(todaydata[1] )+str('<=')+str( rmax*jizhipoints['5daysmax'][1])})
 
     # def change_fenxi(change):
-    if(sum(change)/len(change)>=0.46):
-        sell_point.append({'mean5up':round(sum(change)/len(change),5)})
-    elif(sum(change)/len(change)<=-0.46):
-        buy_points.append({'mean5up':round(sum(change)/len(change),5)})
+    if(sum(change)/len(change)>=0.5)and change[0]<0.2 and change[0]<change[1] and method=='general':
+        sell_point.append({'5天涨幅均值':round(sum(change)/len(change),5)})
+    elif(sum(change)/len(change)<=-0.46)and method=='general':
+        buy_points.append({'5天跌幅均值':round(sum(change)/len(change),5)})
+    elif (sum(change) / len(change) <= -0.46) and method == 'top':
+        buy_points.append({'5天跌幅均值': round(sum(change) / len(change), 5)})
+    if (sum(change7) / len(change7) >= 0.7)and change[0]<0.2 and sum(change7[:2]) / len(change7[:2])<0.4  and method == 'top' :
+        sell_point.append({'5天涨幅均值': round(sum(change) / len(change), 5)})
 
-    big=[];small=[]
+    big=[];small=[];small7=[];big7=[]
     if len(change)>3:
         for i in range(len(change)):
             if (change[i]>0):
                 big.append(change[i])
-            elif (change[i]<0):
+            elif (change[i]<0) :
                 small.append(change[i])
-        if len(big)>=4 and change[0]<0.2  :
-            sell_point.append({'go up 4days':change7})
+        for j in range(0,len(change7)):
+            if (change7[j]>0.05)and method=='top':
+                big7.append(change7[j])
+            elif (change7[j]<0.05)and method=='top':
+                small7.append(change7[j])
+        if len(big)>=4 and change[0]<0.2 and change[0]<change[1] and method=='general':
+            sell_point.append({'已涨4天':change7})
+        elif len(big7)>=5 and change[0]<0.2 and change[0]<change[1] and method=='top':
+            sell_point.append({'已涨5天':change7})
         # elif (change[0]<change[1] and(change[0]<0.04)and len(big)>=3):
         #     sell_point.append({u'go up 4days': big})
-        if (len(small)>=4 and change[0]>0) or (len(small)>=3 and change[0]<-0.5 and change[1]<0.1):
-            buy_points.append({'go down 3days':change7})
+        if (len(small)>=4 ) :
+            buy_points.append({'已跌四天':change7})
+        elif(((max(data5days[2:])-data5days[0])/max(data5days[2:]))>=0.025)and(sum(change)<-1.1):
+            down=round((max(data5days[2:])-data5days[0])/max(data5days[2:]),5)
+            buy_points.append({'五天跌幅超2.5%': down})
+
     return {'sell':sell_point,'buy':buy_points}
 
 def main_run(all_fund_list):
     code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-
+    buysellstock = mainStock()
     buysell = []
+    buysell1 = []
     for i in code:
+        jingzhimin = get_histrydata(i, 365)
+        buysell1.append(macdmain(i,jingzhimin))
         # save(strfundcode=i ,numdays=365*1)
-        sb=fenxi(strfundcode=i, numdays=365 * 1)
+        sb=fenxi(strfundcode=i, jingzhimin=jingzhimin, method ='general')
         if sb:
-            buysell.append([i,sb])
-    for i in all_fund_list[0:50]:
+            buysell.append([i,sb,'code'])
+    for i in all_fund_list:
         # save(strfundcode=i ,numdays=365*1)
-        sb=fenxi(strfundcode=i, numdays=365 * 1)
+        jingzhimin1 = get_histrydata(i, 365)
+        buysell1.append(macdmain(i,jingzhimin1))
+        sb=fenxi(strfundcode=i, jingzhimin=jingzhimin1, method='top')
         if sb:
-            buysell.append([i,sb])
-    return buysell
+            buysell.append([i, sb, 'all_fund_list'])
+    return buysell,buysell1,buysellstock
 
 s = sched.scheduler(time.time, time.sleep)
 class DateEncoder(json.JSONEncoder):
@@ -483,7 +503,7 @@ def check_time(H, M,S):
     s.enter(1, 1, check_time, deb_print())
 
 
-def main1(sign):
+def main1():
     now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     H = now[9:11]
     M = now[12:14]
@@ -496,12 +516,21 @@ def main1(sign):
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
         buysell1 = main_run(all_fund_list)
         print(str(buysell1))
-        sendmsg = ''
+        sendmsg = 'signal(1:买, -1:卖, 0:默认) \n'
         # f = open("buysell.txt",'a')
-        for j in sign:
-            #sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+'\n'
-            sendmsg +=str(j[0])+','+str(j[1])+','+str(j[2][0])+','+str(j[2][1][0])+','+ (' http://fund.eastmoney.com/%s.html' % j[0][0])+'\n'
-        for i in buysell1:
+        for j in buysell1[1]:
+            for m in j:
+                if len(m) >0:
+                    sendmsg +=str(m[0][0].encode("utf-8"))+','+str(m[0][1].encode("utf-8"))+','+str(m[1])+','+str(m[2][0])+','+str(m[2][1][0])+',交易次数：'+str(m[2][2])+','+ str(m[2][3]) + ','+ (' http://fund.eastmoney.com/%s.html' % m[0][0])+'\n'
+        for n in buysell1[2]:
+            # for n in k:
+            if len(n) >0:
+                sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
+                    n[1]) + ',' + str(n[2][0]) + ',' + str(n[2][1][0]) + ',交易次数：' + str(n[2][2]) + ',' + str(n[2][3]) + ','+ (
+                           ' http://quotes.money.163.com/%s.html' % n[0][0]) + '\n'
+        buysmg=''
+        sellmsg=''
+        for i in buysell1[0]:
             # write_str =  str(i) + '\n'
             # f.write(write_str)
             st = ' '
@@ -515,10 +544,21 @@ def main1(sign):
                 for k in i[1]['sell']:
                     for t in k:
                         st += t + str(k[t]) + ' '
-            if st != ' ':
-                sendmsg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0]) + (
-                '   http://www.efunds.com.cn/html/fund/%s_fundinfo.htm' % i[0][0]) + '\n'
-        # print sendmsg
+            if st != ' ' and '买'in st:
+                if i[2]=='code':
+                    buysmg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0]) + (
+                    '   http://www.efunds.com.cn/html/fund/%s_fundinfo.htm' % i[0][0]) + '\n'
+                else:
+                    buysmg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0])  + '\n'
+            if st != ' ' and '卖'in st:
+                if i[2] == 'code':
+                    sellmsg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0]) + (
+                    '   http://www.efunds.com.cn/html/fund/%s_fundinfo.htm' % i[0][0]) + '\n'
+                else:
+                    sellmsg += i[0][0] + ',' + i[0][1] + st + (' http://fund.eastmoney.com/%s.html' % i[0][0])  + '\n'
+        sendmsg +=buysmg
+        sendmsg += sellmsg
+        print sendmsg
         send_email(sendmsg)
     while True:
         now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())

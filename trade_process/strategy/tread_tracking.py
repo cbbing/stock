@@ -14,7 +14,7 @@ from tushare.util import dateu as du
 import datetime
 import tushare as ts
 import cwavelet
-
+from macd_back_test import match
 #参数
 prama_ma_short = 3 # 短均线
 prama_ma_long = 7 # 长均线
@@ -66,6 +66,7 @@ def tread_track_live_trading(code, price_now, df=None):
     plt.plot(range(len(close_price)), close_price, label='close', linewidth=1)
     plt.xlabel("Time")
     plt.ylabel("Price")
+    plt.savefig()
     
     # 过滤微小波动
     extreIndex = -1 #极值点的索引        
@@ -207,10 +208,10 @@ def tread_track_live_trading(code, price_now, df=None):
 # 参数
 # code：股票代码
 # df: 个股的K线数据
-def tread_track_backtest(code, df=None):
+def tread_track_backtest(code, fundlist,avg):
     # df = get_stock_k_line(code, date_start='2015-12-30', date_end='2016-05-05')
     # df=efund_mail2.get_histrydata(code,365)
-    fundlist = efund_mail2.get_histrydata(code, 365)
+    # fundlist = efund_mail2.get_histrydata(code, 365)
     df = pd.DataFrame(fundlist[::-1], columns=['date', 'close', 'countclose', 'change'])
     if len(df) == 0:
         return None
@@ -229,10 +230,10 @@ def tread_track_backtest(code, df=None):
     #print df
     
     close_price = df['close'].get_values()
-    ma_short = pd.rolling_mean(df['close'], prama_ma_short)
-    ma_long  = pd.rolling_mean(df['close'], prama_ma_long)
-    ma_long20 = pd.rolling_mean(close_price, prama_ma_long20)
-    ma_long30 = pd.rolling_mean(close_price, prama_ma_long30)
+    ma_short = pd.rolling_mean(df['close'], avg[0])
+    ma_long  = pd.rolling_mean(df['close'], avg[1])
+    ma_long20 = pd.rolling_mean(close_price, avg[2])
+    # ma_long30 = pd.rolling_mean(close_price, prama_ma_long30)
     #print ma_short
     
     signal = SIGNAL_SALE
@@ -241,9 +242,17 @@ def tread_track_backtest(code, df=None):
     
     #plt.figure(figsize=(16,8))
     #plt.plot(range(len(ma_short)), ma_short.get_values(), label=code, color="b", linewidth=1)
-    
-    # plt.xlabel("Time")
-    # plt.ylabel("Price")
+    plt.figure(figsize=(6, 3))
+    plt.plot(range(len(ma_short)), ma_short, label=code, color="b", linewidth=1)
+    plt.plot(range(len(ma_long)), ma_long, label=code, color="r", linewidth=1)
+    plt.plot(range(len(ma_long20)), ma_long20, label=code, color="g", linewidth=1)
+    # plt.plot(range(len(ma_long30)), ma_long30, label=code, linewidth=1)
+    plt.plot(range(len(close_price)), close_price, label='close', linewidth=1)
+    plt.xlabel("Time")
+    plt.ylabel("Price")
+    plt.title(code[1])
+    plt.savefig(r'E:\03IT\GitHub\stock-2\trade_process\stockdata\\'+code[1]+'.jpg')
+
 
     # 判断极点
     # for i in range(prama_ma_short+1, len(ma_short)-1):
@@ -359,7 +368,7 @@ def tread_track_backtest(code, df=None):
                     keep_stop_up_price = 0
                     keep_stop_down_price = 0
                     continue
-                
+
             max_index_pre = i
         elif ma_short[i] < ma_short[i-1] and ma_short[i] < ma_short[index_post]:  # 极小值
             # < 买入 > 如果当前低点比前一个低点的向上漂移项高，则多头开仓或持有多头；
@@ -384,7 +393,7 @@ def tread_track_backtest(code, df=None):
         
         # 高低点突破策略    
         # <卖出>如果滤波后的均线比前一个低点的向下漂移项低，则空头开仓或持有空头。
-        elif signal == SIGNAL_BUY and min_index_pre > 0 and ma_short[i] < ma_short[min_index_pre] - drift*(i-min_index_pre):
+        if signal == SIGNAL_BUY and min_index_pre > 0 and ma_short[i] < ma_short[min_index_pre] - drift*(i-min_index_pre):
             signal = SIGNAL_SALE
             stockPos.sale(close_price[i], str(df.ix[i, 'date']))
             min_index_pre = 0
@@ -504,14 +513,29 @@ class StockPosition():
         return (cash_now - self.init_cash) / self.init_cash * 100, len(self.transaction_records)
 
 def stock_trader_main(code):
-    # code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
-    #         ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
-    #         ['161125', 'SPX500']]
+    codelist = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
+            ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
+            ['161125', 'SPX500']]
     name = ['eGold', 'eoil', '创业板', '上证50', '沪深300', '恒生', '易方达纳斯达克100', '安心b']
     buysell = []
-    for i in code:
+    stockTxtNewPath = "E:/03IT/GitHub/stock-2/stockdata/" + 'GAOpt100.txt'
+    file_to_read = open(stockTxtNewPath, 'r')
+    lines = file_to_read.readlines()  # 整行读取数据
+    for i in codelist:
+        if not lines:
+            break
+            pass
+        else:
+            contmatch = match('MA', i, lines)
+            if len(contmatch) != 0:
+                Avg = [int(contmatch[0][1].split(',')[0]), int(contmatch[0][1].split(',')[1]),
+                       int(contmatch[0][1].split(',')[2])]
+            elif (len(contmatch)==0):
+                Avg = ([3, 8, 40])
         # save(strfundcode=i ,numdays=365*1)
-        buysell.append(tread_track_backtest(i))
+        ifundlist = efund_mail2.get_histrydata(i, 365)
+        buysell.append(tread_track_backtest(i,ifundlist,Avg))
+
     for i in buysell:
         i.summary()
         # url = 'http://fund.eastmoney.com/%s.html' % i[0]
@@ -547,7 +571,7 @@ if __name__ == "__main__":
     code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-    stock_trader_main()
+    stock_trader_main(code)
 
 
     

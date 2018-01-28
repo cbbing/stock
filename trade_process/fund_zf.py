@@ -39,7 +39,7 @@ def main_zf():
     print strtoday
 
     # 过去20天日期
-    s20datetime = tdatetime - datetime.timedelta(days=20)
+    s20datetime = tdatetime - datetime.timedelta(days=40)
     strs20date = datetime.datetime.strftime(s20datetime, '%Y-%m-%d')
 
     # 去年今日
@@ -63,42 +63,49 @@ def main_zf():
     # 1、 获取近 1 3 6 增长率top50
 
     month_num = 1
-    month_list = [3, 6,12, 24]
+    month_list = [6,12,24]
     all_fund_list = []
-
+    dx='1'
+    ft=['all','hh','qdii','zq','zs'] #基金类型
+    ftk=ft[0]
     for int_month in month_list:
         try:
             if int_month == 24:
                 # 1年增幅
-                print 'get nearly 2 year top 50 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=1nzf,100&gs=0&sc=2nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                print 'get nearly 2 year top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=2nzf&st=desc&sd=' + \
+                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             elif int_month == 12:
                 # 1年增幅
-                print 'get nearly 1 year top 50 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=1nzf,100&gs=0&sc=1nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                print 'get nearly 1 year top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=1nzf&st=desc&sd=' + \
+                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             elif int_month == 36:
                 # 1年增幅
-                print 'get nearly 3 year top 50 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=1nzf,100&gs=0&sc=3nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                print 'get nearly 3 year top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=3nzf&st=desc&sd=' + \
+                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             elif int_month == 60:
                 # 1年增幅
-                print 'get nearly 1 year top 50 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=1nzf,100&gs=0&sc=5nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                print 'get nearly 1 year top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=5nzf&st=desc&sd=' + \
+                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             elif int_month == 0.25:
                 # 1年增幅
-                print 'get nearly 1 week top 50 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=zzf,100&gs=0&sc=zzf&st=dasc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                print 'get nearly 1 week top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=zzf,100&gs=0&sc=zzf&st=dasc&sd=' + \
+                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+            elif int_month == 1:
+                print 'get nearly ' + str(int_month) + ' months top 200 funds'
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
+                      'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=dasc&sd=' + strsdate + '&ed=' + strs20date + \
+                      '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=' + dx
             else:
                 # 前 n 月增幅
                 print 'get nearly ' + str(int_month) + ' months top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=' + str(int_month) + \
+                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
                       'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=desc&sd=' + strsdate + '&ed=' + strs20date + \
-                      '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=1'
+                      '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             print url + '\n'
 
             # if int_month == 24:

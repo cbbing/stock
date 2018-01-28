@@ -208,12 +208,10 @@ def test_china_individual_data():
             total += twitter['stockUp'] * stockCodeNumDict['num'] 
             print twitter['message'] + twitter['image']
     print '当日盈亏:' + str(total)    
-        
 
 def test_global_index_data():
     for stockDict in WorldStockIndexList:
         print getWorldStockIndexInfo(stockDict)
-
 
 def main():
     "main function"
@@ -234,4 +232,3 @@ def main():
 if __name__ == '__main__':
     #plotData()
     main()
-    

@@ -16,15 +16,16 @@ if __name__ == '__main__':
         "000016",  # 上证50
         "000012",  # 国债指数
     ]
-    code = [ ['160222', '国泰国证食品饮料行业指数分级'],['110022', 'eConsumption '],['110003', 'eSSE50'], ['110020', 'HS300'], ['110028', 'anxinB'],
-             ['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'],
-                    ['110031', 'eHSI'], ['161130', 'eNASDAQ100'],['161125', 'SPX500']]
-    fundlist=main_zf()
-    for i in range(50,56):
-        code.append(fundlist[i])
+    code = []#[ ['160222', '国泰国证食品饮料行业指数分级'],['110022', 'eConsumption '],['110003', 'eSSE50'], ['110020', 'HS300'], ['110028', 'anxinB'],
+             # ['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'],
+             #        ['110031', 'eHSI'], ['161130', 'eNASDAQ100'],['161125', 'SPX500']]
+    # fundlist=main_zf()
+    # for i in range(0,1):#len(fundlist)
+    #     code.append(fundlist[i])
     #均线策略
-    macd=macdmain(code)
-    print macd
-    main1(macd)
+    # macd=macdmain(code)
+    # print macd
+
+    main1()
     # stock_trader_main(code)
     # macd_live_main(code)
