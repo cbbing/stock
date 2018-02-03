@@ -131,7 +131,7 @@ def select_Time_MA(stock_data, stockName,*Avg):
     currentSignal=[]
     for t in range(ma_list[1]+1, len(close_price)):
         signal = SIGNAL_DEFAULT
-        if ema_close_short[t] > ema_close_short[t-1] and ema_close_short[t] > ema_close_vlong[t] \
+        if ema_close_short[t] > ema_close_short[t-1] and ema_close_short[t] >ema_close_vlong[t] \
                         and ema_close_short[t-1] < ema_close_vlong[t-1]:
             if bBuySignal:
                 signal = SIGNAL_BUY
@@ -587,7 +587,7 @@ def cal_opt(numParm,fintness,strategyName,func,stock_data, stockName):
     elif (strategyName == 'MACD' or strategyName == 'DMA')and 'Low' not in stock_data.columns:
         datarange = [[3, 20], [21, 41], [5, 20]]
     else:
-        datarange=[[2,5],[5,19],[20,60]]
+        datarange=[[2,5],[6,19],[7,60]]
     datarange=datarange[:numParm]
     genome = G1DList.G1DList(numParm)
     genome.evaluator.set(func(fintness,strategyName,stock_data, stockName))
@@ -664,7 +664,7 @@ def macdmain(stockName,fundlist):
     # stock_data = pd.read_csv(stockCsvPath)
     stockTxtNewPath = "./stockdata/"+ 'GAOpt100.txt'
     # fundlist = efund_mail2.get_histrydata(stockName, 180)
-    stock_data = pd.DataFrame(fundlist[:100][::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
+    stock_data = pd.DataFrame(fundlist[:200][::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
     # self_adaptive_ma(stock_data)
 
     Avg1=([3,8,40])
@@ -680,7 +680,7 @@ def macdmain(stockName,fundlist):
             pass
         else:
             contmatch=match(i,stockName,lines)
-            if (cal=='new')or(len(contmatch)==0):
+            if (cal=='new')and(len(contmatch)==0):
                 best=cal_opt(3, 'abs', i, func, stock_data, stockName)
                 # AvgParm.append(best)
                 f = open(stockTxtNewPath, 'a')
@@ -695,7 +695,7 @@ def macdmain(stockName,fundlist):
             elif (len(contmatch)==0)and(i != 'MA'):
                 Avg = ([12, 26, 9])
             elif (len(contmatch)==0)and(i == 'MA'):
-                Avg = ([3, 8, 40])
+                Avg = ([3, 8, 44])
         result=None
         if(i=='MA'):
             print u'-- MA 策略 --'
@@ -730,6 +730,7 @@ def mainStock():
     file = {'stockcodewangyiShangz.txt': 0,
             'stockcodewangyiShenz.txt': 1}  # 'stockcodewangyiqdii.txt':'','stockcodewangyidetail.txt':''
     buysell=[]
+    stockTxtNewPath = "./stockdata/" + 'GAOpt100.txt'
     stockTxtNewPath = "./stockdata/" + 'GAOpt100.txt'
     for jj in file:
         CodeList = []

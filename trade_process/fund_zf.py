@@ -32,7 +32,7 @@ def get_type(fund_code, all_fund_list):
     return fund_type
 
 
-def main_zf():
+def main_zf(fund):
     # 当前日期
     strtoday = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
     tdatetime = datetime.datetime.strptime(strtoday, '%Y-%m-%d')
@@ -63,49 +63,73 @@ def main_zf():
     # 1、 获取近 1 3 6 增长率top50
 
     month_num = 1
-    month_list = [6,12,24]
+    month_list = [0.25,1,6,12,24]
     all_fund_list = []
     dx='1'
     ft=['all','hh','qdii','zq','zs'] #基金类型
     ftk=ft[0]
     for int_month in month_list:
         try:
-            if int_month == 24:
-                # 1年增幅
-                print 'get nearly 2 year top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=2nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
-            elif int_month == 12:
-                # 1年增幅
-                print 'get nearly 1 year top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=1nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
-            elif int_month == 36:
-                # 1年增幅
-                print 'get nearly 3 year top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=3nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
-            elif int_month == 60:
-                # 1年增幅
-                print 'get nearly 1 year top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=5nzf&st=desc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
-            elif int_month == 0.25:
-                # 1年增幅
-                print 'get nearly 1 week top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=zzf,100&gs=0&sc=zzf&st=dasc&sd=' + \
-                      strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
-            elif int_month == 1:
-                print 'get nearly ' + str(int_month) + ' months top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
-                      'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=dasc&sd=' + strsdate + '&ed=' + strs20date + \
-                      '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=' + dx
+            if fund =='gf' or fund =='efund':
+                if fund == 'gf':
+                    # 广发排行
+                    fundcode='80000248'
+                elif fund == 'efund':
+                    fundcode = '80000229'
+                if int_month/12 >= 1 :
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp='+fundcode+'&sc='+str(int_month)+'n&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0'
+                elif int_month == 0.25:
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp='+fundcode+'&sc=z&st=asc&pi=1&pn=80&zf=diy&sh=list&rnd='
+                else:
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp='+fundcode+'&sc='+str(int_month)+'y&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd='
+                # 易方达1周排行
+            # elif fund == 'efund':
+            #     if int_month / 12 >= 1:
+            #         url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000229&sc=z&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.8037251392454077'
+            #     elif int_month == 0.25:
+            #         # 易方达6月排行
+            #         url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000229&sc=6y&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.2738232363825983'
+            #     else:
+            #         url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000229&sc=6y&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.2738232363825983'
             else:
-                # 前 n 月增幅
-                print 'get nearly ' + str(int_month) + ' months top 200 funds'
-                url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
-                      'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=desc&sd=' + strsdate + '&ed=' + strs20date + \
-                      '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                if int_month/12 >= 1:
+                    # 1年增幅
+                    print ('get nearly %s year top 200 funds',int_month/12)
+                    url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc='+str(int_month/12)+'nzf&st=desc&sd=' + \
+                          strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                # elif int_month == 12:
+                #     # 1年增幅
+                #     print 'get nearly 1 year top 200 funds'
+                #     url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=1nzf&st=desc&sd=' + \
+                #           strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                # elif int_month == 36:
+                #     # 1年增幅
+                #     print 'get nearly 3 year top 200 funds'
+                #     url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=3nzf&st=desc&sd=' + \
+                #           strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                # elif int_month == 60:
+                #     # 1年增幅
+                #     print 'get nearly 1 year top 200 funds'
+                #     url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=1nzf,100&gs=0&sc=5nzf&st=desc&sd=' + \
+                #           strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                elif int_month == 0.25:
+                    # 1年增幅
+                    print 'get nearly 1 week down 200 funds'
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&sc=z&st=asc&pi=1&pn=300&zf=diy&sh=list&rnd='
+                    # url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=zzf,100&gs=0&sc=zzf&st=dasc&sd=' + \
+                    #       strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
+                elif int_month == 1:
+                    print 'get nearly ' + str(int_month) + ' months down 200 funds'
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&sc=1y&st=asc&pi=1&pn=300&zf=diy&sh=list&rnd='
+                    # url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
+                    #       'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=dasc&sd=' + strsdate + '&ed=' + strs20date + \
+                    #       '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=' + dx
+                else:
+                    # 前 n 月增幅
+                    print 'get nearly ' + str(int_month) + ' months top 200 funds'
+                    url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
+                          'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=desc&sd=' + strsdate + '&ed=' + strs20date + \
+                          '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
             print url + '\n'
 
             # if int_month == 24:
@@ -267,7 +291,15 @@ def main_zf():
         file_object.close()
     return all_fund_list
     # sys.exit(0)
-
+def getRankFund():
+    # 全部基金排行 --基金导购
+    url='http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&sc=z&st=desc&pi=1&pn=200&zf=diy&sh=list&rnd=0.4893989337468809'
+    #广发排行
+    gfUrl='http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000248&sc=z&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.15840037296002807'
+    # 易方达1周排行
+    EfundUrl='http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000229&sc=z&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.8037251392454077'
+    #易方达6月排行
+    EfundUrl6='http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&cp=80000229&sc=6y&st=desc&pi=1&pn=80&zf=diy&sh=list&rnd=0.2738232363825983'
 def test():
     month_num = 1
 

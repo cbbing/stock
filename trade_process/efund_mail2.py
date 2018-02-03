@@ -316,10 +316,9 @@ def celue(funddata,jizhipoints,method):
     return {'sell':sell_point,'buy':buy_points}
 
 def main_run(all_fund_list):
-    code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
+    code = [['002124','广发新兴产业'],['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-    buysellstock = mainStock()
     buysell = []
     buysell1 = []
     for i in code:
@@ -336,6 +335,7 @@ def main_run(all_fund_list):
         sb=fenxi(strfundcode=i, jingzhimin=jingzhimin1, method='top')
         if sb:
             buysell.append([i, sb, 'all_fund_list'])
+    buysellstock = mainStock()
     return buysell,buysell1,buysellstock
 
 s = sched.scheduler(time.time, time.sleep)
@@ -511,24 +511,33 @@ def main1():
     code = [['002963', 'egold'], ['003321', 'eoil'], ['004744', 'eGEI'], ['110003', 'eSSE50'], ['110020', 'HS300'],
             ['110031', 'eHSI'], ['161130', 'eNASDAQ100'], ['110028', 'anxinB'], ['110022', 'eConsumption '],
             ['161125', 'SPX500']]
-    all_fund_list = main_zf()
+    all_fund_list = main_zf('All')
     #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
-        buysell1 = main_run(all_fund_list)
+        buysell1 = main_run(all_fund_list[:60])
         print(str(buysell1))
-        sendmsg = 'signal(1:买, -1:卖, 0:默认) \n'
+        sendmsg = '股市有风险，投资需谨慎。1、MACD与MA模型买卖信号，signal(1:买, -1:卖, 0:默认)    2、连续涨跌与今日净值是否接近最大最小净值判断买卖信息 \n'
         # f = open("buysell.txt",'a')
         for j in buysell1[1]:
             for m in j:
-                if len(m) >0:
-                    sendmsg +=str(m[0][0].encode("utf-8"))+','+str(m[0][1].encode("utf-8"))+','+str(m[1])+','+str(m[2][0])+','+str(m[2][1][0])+',交易次数：'+str(m[2][2])+','+ str(m[2][3]) + ','+ (' http://fund.eastmoney.com/%s.html' % m[0][0])+'\n'
+                if len(m) > 0:
+                    sendmsg += str(m[0][0].encode("utf-8")) + ',' + str(m[0][1].encode("utf-8")) + ',' + str(
+                        m[1]) + ',回测历史收益' + str(m[2][0]) + ',买卖信号：' + str(m[2][1][0]) + ',交易次数：' + str(
+                        m[2][2]) + ',超额收益' + str(m[2][3]) + ',' + (
+                               ' http://fund.eastmoney.com/%s.html' % m[0][0]) + '\n'
         for n in buysell1[2]:
             # for n in k:
-            if len(n) >0:
+            if len(n) > 0 and n[0][0][:3] == '000':
                 sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
-                    n[1]) + ',' + str(n[2][0]) + ',' + str(n[2][1][0]) + ',交易次数：' + str(n[2][2]) + ',' + str(n[2][3]) + ','+ (
-                           ' http://quotes.money.163.com/%s.html' % n[0][0]) + '\n'
-        buysmg=''
+                    n[1]) + ',回测历史收益' + str(n[2][0]) + ',买卖信号：' + str(n[2][1][0]) + ',交易次数：' + str(
+                    n[2][2]) + ',超额收益' + str(n[2][3]) + ',' + (
+                               ' http://quotes.money.163.com/0%s.html' % n[0][0]) + '\n'
+            elif len(n) > 0 and n[0][0][:3] == '399':
+                sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
+                    n[1]) + ',回测历史收益' + str(n[2][0]) + ',买卖信号：' + str(n[2][1][0]) + ',交易次数：' + str(
+                    n[2][2]) + ',超额收益' + str(n[2][3]) + ',' + (
+                               ' http://quotes.money.163.com/1%s.html' % n[0][0]) + '\n'
+        buysmg = ''
         sellmsg=''
         for i in buysell1[0]:
             # write_str =  str(i) + '\n'
@@ -560,21 +569,21 @@ def main1():
         sendmsg += sellmsg
         print sendmsg
         send_email(sendmsg)
-    while True:
-        now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
-        # date = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
-        H = now[9:11]
-        M = now[12:14]
-        S = now[15:]
-        # print H,S,M
-        print 'Start:'+'13:05' +' and 14:30 '+'send to email.'+"\n" +'please wait:'
-
-        #    print time.localtime()
-        #    print time.strftime("%y-%m-%d %H:%M:%S",time.localtime())
-        # xiaozhao = Xiaozhao()
-        # xiaozhao.send_email()
-        s.enter(1, 1, check_time, deb_print())
-        s.run()
+    # while True:
+    #     now = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+    #     # date = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
+    #     H = now[9:11]
+    #     M = now[12:14]
+    #     S = now[15:]
+    #     # print H,S,M
+    #     print 'Start:'+'13:05' +' and 14:30 '+'send to email.'+"\n" +'please wait:'
+    #
+    #     #    print time.localtime()
+    #     #    print time.strftime("%y-%m-%d %H:%M:%S",time.localtime())
+    #     # xiaozhao = Xiaozhao()
+    #     # xiaozhao.send_email()
+    #     s.enter(1, 1, check_time, deb_print())
+    #     s.run()
 
 if __name__=='__main__':
     # itchat.auto_login(hotReload=True)
