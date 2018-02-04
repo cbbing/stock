@@ -521,7 +521,7 @@ def main1():
         for j in buysell1[1]:
             for m in j:
                 if len(m) > 0:
-                    if m[2][0]> -10:
+                    if m[2][3]> -30 :
                         sendmsg += str(m[0][0].encode("utf-8")) + ',' + str(m[0][1].encode("utf-8")) + ',' + str(
                             m[1]) + ',回测收益' + str(m[2][0]) + ',买卖：' + str(m[2][1][0]) + ',交易次数：' + str(
                             m[2][2]) + ',超额收益' + str(m[2][3]) + ',' + (
@@ -530,13 +530,13 @@ def main1():
         for n in buysell1[2]:
             # for n in k:
             if len(n) > 0 :
-                if n[2][0]> -10 and n[0][0][:3] == '000':
+                if n[2][3]> -30 and n[0][0][:3] == '000':
                     sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
                         n[1]) + ',回测收益' + str(n[2][0]) + ',买卖：' + str(n[2][1][0]) + ',交易次数：' + str(
                         n[2][2]) + ',超额收益' + str(n[2][3]) + ',' + (
                                    ' http://quotes.money.163.com/0%s.html' % n[0][0]) + '\n'
             elif len(n) > 0 :
-                if n[2][0]> -10 and n[0][0][:3] == '399':
+                if n[2][3]> -30 and n[0][0][:3] == '399':
                     sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
                         n[1]) + ',回测收益' + str(n[2][0]) + ',买卖：' + str(n[2][1][0]) + ',交易次数：' + str(
                         n[2][2]) + ',超额收益' + str(n[2][3]) + ',' + (
