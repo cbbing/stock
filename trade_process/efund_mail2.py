@@ -138,8 +138,6 @@ def get_histrydata(strfundcode,numdays):
     strtoday = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
     tdatetime = datetime.datetime.strptime(strtoday, '%Y-%m-%d')
     print u'结束时间：' + strtoday
-    url = 'http://fund.eastmoney.com/%s.html' % strfundcode[0]
-    todayvalue = spider(url)
 
     # 昨天
     yestodaytime = tdatetime - datetime.timedelta(days=1)
@@ -189,8 +187,11 @@ def get_histrydata(strfundcode,numdays):
         print 'date input error!\n'
 
     jingzhimin = get_jingzhi(strfundcode[0], strsdate, stredate)
-    if todayvalue != None or edatetime.isoweekday() != 7 or edatetime.isoweekday() != 6:
-        jingzhimin.insert(0, [tdatetime, todayvalue[0], todayvalue[1], todayvalue[2]])
+    if tdatetime.isoweekday() != 7 and tdatetime.isoweekday() != 6:
+        url = 'http://fund.eastmoney.com/%s.html' % strfundcode[0]
+        todayvalue = spider(url)
+        if todayvalue != None:
+            jingzhimin.insert(0, [tdatetime, todayvalue[0], todayvalue[1], todayvalue[2]])
     return jingzhimin
 
 #计算交易策略
@@ -514,7 +515,7 @@ def main1():
     all_fund_list = main_zf('All')
     #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
-        buysell1 = main_run(all_fund_list[:60])
+        buysell1 = main_run(all_fund_list[:10])
         print(str(buysell1))
         sendmsg = '股市有风险，投资需谨慎。1、MACD与MA模型买卖信号，signal(1:买, -1:卖, 0:默认)    2、连续涨跌与今日净值是否接近最大最小净值判断买卖信息 \n'
         # f = open("buysell.txt",'a')
