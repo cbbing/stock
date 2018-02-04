@@ -112,6 +112,7 @@ def downlaodData():
 if __name__ == '__main__':
 
     downlaodData()
+    filepath = os.path.pardir + '/stockdata/dongfangcf/'
     ##########################将股票数据存入数据库###########################
     # 数据库名称和密码
     name = 'xxxx'
