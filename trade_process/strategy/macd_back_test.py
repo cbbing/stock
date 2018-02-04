@@ -151,7 +151,7 @@ def select_Time_MA(stock_data, stockName,*Avg):
                 bBuySignal = True    
         signals.append(signal)
         if signal != 0:
-            print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
+            # print 't:', str(stock_data.ix[t, 'Date']), '  signal:', signal
             tradeTimes += 1
             if (t <= len(close_price)) and (t >= (len(close_price) - 4)):
                 currentSignal.append(['t:', str(stock_data.ix[t, 'Date']), '  signal:', signal])
@@ -642,7 +642,6 @@ def match(select_method,stockName,lines):
     for line in lines:
         if line != '\n':
             # print str(line.split('|'))
-
             if(stockName[0] == line.split('|')[1])and(select_method == line.split('|')[0]):
                 contmatch.append([line.split('|')[0],line.split('|')[3]])
     return contmatch

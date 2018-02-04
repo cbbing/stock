@@ -98,10 +98,10 @@ def get_jingzhi(strfundcode, strdate,stredate):
             entry[3].rstrip('%')
             date = datetime.datetime.strptime(entry[0], '%Y-%m-%d')
             # jingzhi = entry[2]
-            if entry[3]!='':
+            if entry[3]!='' and entry[2]!='':
                 result.append([date, float(entry[1]),float(entry[2]), float(entry[3].rstrip('%'))])
             else:
-                result.append([date, float(entry[1]), float(entry[2]), 0])
+                result.append([date, float(entry[1]), float(0), 0])
             jingzhi1 = entry[1]
             jingzhi2 = entry[2]
             # print jingzhi2
@@ -189,7 +189,7 @@ def get_histrydata(strfundcode,numdays):
         print 'date input error!\n'
 
     jingzhimin = get_jingzhi(strfundcode[0], strsdate, stredate)
-    if todayvalue != None and edatetime.isoweekday() != 7 and edatetime.isoweekday() != 7:
+    if todayvalue != None or edatetime.isoweekday() != 7 or edatetime.isoweekday() != 6:
         jingzhimin.insert(0, [tdatetime, todayvalue[0], todayvalue[1], todayvalue[2]])
     return jingzhimin
 
