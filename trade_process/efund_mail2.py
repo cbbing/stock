@@ -521,11 +521,11 @@ def main1():
         for j in ibuysell1[1]:
             for m in j:
                 if len(m) > 0:
-			#if m[2][3]> -30 :
-                        sendmsg += str(m[0][0].encode("utf-8")) + ',' + str(m[0][1].encode("utf-8")) + ',' + str(
-                            m[1]) + ',回测收益' + str(m[2][0]) + ',买卖：' + str(m[2][1][0]) + ',交易次数：' + str(
-                            m[2][2]) + ',超额收益' + str(m[2][3]) + ',' + (
-                                   ' http://fund.eastmoney.com/%s.html' % m[0][0]) + '\n'
+		   if m[2][3]> -35 :
+			sendmsg += str(m[0][0].encode("utf-8")) + ',' + str(m[0][1].encode("utf-8")) + ',' + str(
+			    m[1]) + ',回测收益' + str(m[2][0]) + ',买卖：' + str(m[2][1][0]) + ',交易次数：' + str(
+			    m[2][2]) + ',超额收益' + str(m[2][3]) + ',' + (
+				   ' http://fund.eastmoney.com/%s.html' % m[0][0]) + '\n'
         sendmsg +='1、根据MACD与MA均线模型获取沪深股指近两三天内买卖信号 '+ '\n'
         for n in ibuysell1[2] :
             # for n in k:
