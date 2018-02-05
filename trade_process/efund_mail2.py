@@ -406,10 +406,10 @@ def send_email(text):
         # # 这里的filename可以任意写，写什么名字，邮件中显示什么名字
         # att2.add_header('Content-Disposition', 'attachment', filename='b1.txt')
         # msg.attach(att2)
-        att3 = MIMEApplication(open('基金综合排名结果.txt', 'rb').read())
+        #att3 = MIMEApplication(open('基金综合排名结果.txt', 'rb').read())
         # 这里的filename可以任意写，写什么名字，邮件中显示什么名字
-        att3.add_header('Content-Disposition', 'attachment', filename='b2.txt')
-        msg.attach(att3)
+        #att3.add_header('Content-Disposition', 'attachment', filename='b2.txt')
+        #msg.attach(att3)
         smtpserver = 'smtp.126.com'
         try:
             smtp = smtplib.SMTP(smtpserver,25)
@@ -422,14 +422,14 @@ def send_email(text):
             print(u"Error: 无法发送邮件:" + str(e))
             smtp.quit()
             try:
-                username = 'lishulincug@126.com'  # input("请输入账号:")
+                username = '15623863340@163.com'  # input("请输入账号:")
                 password = '133499cug'  # input("请输入密码:")
                 sender = username
                 # sender=''
                 # receiver = [ '1627041882@qq.com','994992333@qq.com','1847725033@qq.com']  # 'xxxxxxxxxx@qq.com','xxxxxxxxxx@126.com','994992333@qq.com','1847725033@qq.com'
                 msg['From'] = formataddr(['lishulin', sender])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
                 msg['To'] = ",".join(receiver)  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
-                smtpserver = 'smtp.126.com'
+                smtpserver = 'smtp.163.com'
                 smtp = smtplib.SMTP(smtpserver,25)
                 smtp.starttls()
                 smtp.login(username, password)
