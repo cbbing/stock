@@ -514,11 +514,11 @@ def main1():
     all_fund_list1 = main_zf('All')
     #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
-        buysell1 = main_run(all_fund_list1[:60])
+        ibuysell1 = main_run(all_fund_list1[:60])
         print(str(buysell1))
         sendmsg = '股市有风险，投资需谨慎。模型难免有误，具体买卖需看下走势。1、根据MACD与MA均线模型获取近两三天内买卖信号如，[2018-01-29 00:, signal:, -1]，signal(1:买, -1:卖, 0:默认)，该模型有一定参考依据，但信号常反应较慢，需结合走势判断。    2、连续四五天涨跌与今日净值是否接近最大最小净值判断买卖信息，该模型在适合小涨小跌，大涨大跌时需谨慎。 \n'
         # f = open("buysell.txt",'a')
-        for j in buysell1[1]:
+        for j in ibuysell1[1]:
             for m in j:
                 if len(m) > 0:
 			#if m[2][3]> -30 :
@@ -527,15 +527,15 @@ def main1():
                             m[2][2]) + ',超额收益' + str(m[2][3]) + ',' + (
                                    ' http://fund.eastmoney.com/%s.html' % m[0][0]) + '\n'
         sendmsg +='1、根据MACD与MA均线模型获取沪深股指近两三天内买卖信号 '+ '\n'
-        for n in buysell1[2]:
+        for n in ibuysell1[2] :
             # for n in k:
-            if len(n) > 0 :
+            if len(n) > 0 and n[2][3]> -30 and n[0][0][:3] == '000':
                 if n[2][3]> -30 and n[0][0][:3] == '000':
                     sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
                         n[1]) + ',回测收益' + str(n[2][0]) + ',买卖：' + str(n[2][1][0]) + ',交易次数：' + str(
                         n[2][2]) + ',超额收益' + str(n[2][3]) + ',' + (
                                    ' http://quotes.money.163.com/0%s.html' % n[0][0]) + '\n'
-            elif len(n) > 0 :
+            elif len(n) > 0 and n[2][3]> -30 and n[0][0][:3] == '399':
                 if n[2][3]> -30 and n[0][0][:3] == '399':
                     sendmsg += str(n[0][0].encode("utf-8")) + ',' + str(n[0][1].encode("utf-8")) + ',' + str(
                         n[1]) + ',回测收益' + str(n[2][0]) + ',买卖：' + str(n[2][1][0]) + ',交易次数：' + str(
@@ -544,7 +544,7 @@ def main1():
         buysmg = ''
         sellmsg=''
         sendmsg +='2、连续四五天涨跌与今日净值是否接近最大最小净值判断买卖信息，该模型在适合小涨小跌，大涨大跌时需谨慎。\n'
-        for i in buysell1[0]:
+        for i in ibuysell1[0]:
             # write_str =  str(i) + '\n'
             # f.write(write_str)
             st = ' '
