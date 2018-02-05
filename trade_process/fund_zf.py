@@ -63,7 +63,7 @@ def main_zf(fund):
     # 1、 获取近 1 3 6 增长率top50
 
     month_num = 1
-    month_list = [0.25,1,6,12,24]
+    month_list = [0.25,6,12,24]
     all_fund_list = []
     dx='1'
     ft=['all','hh','qdii','zq','zs'] #基金类型
