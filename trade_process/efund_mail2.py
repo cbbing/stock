@@ -515,7 +515,7 @@ def main1():
     #sign=macdmain(code)
     if (int(H)):  # >= 19(H == "14" and M == "08" and S == "10") or
         ibuysell1 = main_run(all_fund_list1[:60])
-        print(str(buysell1))
+        print(str(ibuysell1))
         sendmsg = '股市有风险，投资需谨慎。模型难免有误，具体买卖需看下走势。1、根据MACD与MA均线模型获取近两三天内买卖信号如，[2018-01-29 00:, signal:, -1]，signal(1:买, -1:卖, 0:默认)，该模型有一定参考依据，但信号常反应较慢，需结合走势判断。    2、连续四五天涨跌与今日净值是否接近最大最小净值判断买卖信息，该模型在适合小涨小跌，大涨大跌时需谨慎。 \n'
         # f = open("buysell.txt",'a')
         for j in ibuysell1[1]:
