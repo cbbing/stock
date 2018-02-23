@@ -1,0 +1,10 @@
+anyjson==0.3.3
+beautifulsoup4==4.6.0
+bs4==0.0.1
+request==0.0.13
+requests==2.14.2
+requests-file==1.4.2
+requests-ftp==0.3.13
+six==1.11.0
+win-unicode-console==0.5
+xlrd==0.9.3

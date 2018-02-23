@@ -5,7 +5,7 @@ from init import *
 
 def send_email_163(from_addr= 'cbbhust@163.com',
                    password = '12356789',
-                   to_addrs = ('m18410182275@163.com'),
+                   to_addrs = ('1627041882@qq.com'),
                    subject= 'Result',
                    content = None):
     """This function use 163 email to send simple message.If success,return Ture,else return False
