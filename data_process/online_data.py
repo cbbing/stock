@@ -11,7 +11,7 @@ import wrapcache
 from retrying import retry
 
 from util.stockutil import fn_timer as fn_timer_
-import util.commons as cm
+import config.settings as cm
 import util.stockutil as util
 
 #获取实时股价(同时获取多只股票)

@@ -29,9 +29,29 @@ KEY_LOW = 'low'
 KEY_VOLUME = 'volume'
 KEY_AMOUNT = 'amount'
 
-STOCK_BASIC_TABLE = 'stock_basic_all' # 索引：获取所有股票
-STOCK_KLINE_TABLE = 'stock_kline_fq' # 索引：获取单只股票的所有日期的K线(前复权,后复权) #stock_kline_all
 
 
 ##################################
+
+DATABASES = {
+    'tushare': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'stock',
+        'USER': 'ts_w',
+        'PASSWORD': 'G8y64mPyG9r@',
+        'HOST': "sh-cdb-s089fj1s.sql.tencentcdb.com",
+        'PORT': 63405,
+    },
+    'strategy': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'stock',
+        'USER': 'ts_r',
+        'PASSWORD': '9f#482KrJc6w',
+        'HOST': "sh-cdb-s089fj1s.sql.tencentcdb.com",
+        'PORT': 63405,
+    }
+}
+
+STOCK_BASIC_TABLE = 'stock_basic_info' # 索引：获取所有股票
+STOCK_KLINE_TABLE = 'stock_kline' # 索引：获取单只股票的所有日期的K线(前复权,后复权) #stock_kline_all
 

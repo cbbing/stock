@@ -1,14 +1,11 @@
 #!/usr/local/bin/python
 #coding=utf-8
 
-import datetime
-
 import pandas as pd
 import tushare as ts
 
-from util.stockutil import getSixDigitalStockCode
 from init import *
-from util.commons import *
+from config.settings import *
 from util.codeConvert import *
 from util.helper import fn_timer
 import wrapcache

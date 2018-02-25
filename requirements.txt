@@ -1,0 +1,4 @@
+tqdm
+lxml
+beautifulsoup4
+tushare
