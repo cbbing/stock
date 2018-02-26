@@ -63,7 +63,7 @@ def main_zf(fund):
     # 1、 获取近 1 3 6 增长率top50
 
     month_num = 1
-    month_list = [0.25,6,12,24]
+    month_list = [1,6,12,24]
     all_fund_list = []
     dx='1'
     ft=['all','hh','qdii','zq','zs'] #基金类型
@@ -120,7 +120,7 @@ def main_zf(fund):
                     #       strsdate + '&ed=' + strs20date + '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx='+dx
                 elif int_month == 1:
                     print 'get nearly ' + str(int_month) + ' months down 200 funds'
-                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&sc=1y&st=asc&pi=1&pn=300&zf=diy&sh=list&rnd='
+                    url = 'http://fund.eastmoney.com/api/FundGuide.aspx?dt=0&sd=&ed=&sc=1y&st=desc&pi=1&pn=300&zf=diy&sh=list&rnd='
                     # url = 'http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft='+ftk+'&rs=' + str(int_month) + \
                     #       'yzf,200&gs=0&sc=' + str(int_month) + 'yzf&st=dasc&sd=' + strsdate + '&ed=' + strs20date + \
                     #       '&qdii=&tabSubtype=,,,,,&pi=1&pn=200&dx=' + dx
