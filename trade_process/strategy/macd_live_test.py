@@ -8,7 +8,7 @@ import numpy as np
 from data_process.data_calcute import calcute_ma
 
 from init import *
-from util.codeConvert import GetNowDate
+from util.date_convert import GetNowDate
 from copy import deepcopy
 
 

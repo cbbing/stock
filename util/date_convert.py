@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 
 import sys, time
 import datetime
@@ -8,12 +7,12 @@ def encode_wrap(str):
     try:
         sse = sys.stdout.encoding
         return str.encode(sse)
-    except Exception, e:
+    except Exception as e:
         return str
 
-def str_qt_to_utf(qt_str):
-    utf_str = unicode(qt_str.toUtf8(), 'utf-8', 'ignore')
-    return utf_str
+# def str_qt_to_utf(qt_str):
+#     utf_str = unicode(qt_str.toUtf8(), 'utf-8', 'ignore')
+#     return utf_str
 
 def str_to_datatime(str_time, format='%Y-%m-%d %H:%M:%S'):
     d = datetime.datetime.strptime(str_time, format)

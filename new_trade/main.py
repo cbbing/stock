@@ -3,7 +3,7 @@
 import tushare as ts
 import pandas as pd
 
-from util.codeConvert import GetNowDate
+from util.date_convert import GetNowDate
 
 def diagnosis_one_stock(code):
     """

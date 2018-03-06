@@ -21,7 +21,7 @@ from util.stockutil import fn_timer as fn_timer_
 from data_process.data_get import *
 from data_process.Stock import Stock
 import util.stockutil as util
-from util.codeConvert import GetNowTime
+from util.date_convert import GetNowTime
 from util.send_mail import send_email_163
 from init import *
 from strategy.stop_loss import stop_loss_by_price

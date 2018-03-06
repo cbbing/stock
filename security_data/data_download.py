@@ -8,6 +8,7 @@ from tushare.util import dateu as du
 from util import stockutil as util
 
 from util.stockutil import fn_timer as fn_timer_
+from util.date_convert import GetNowTime
 
 from util.io_tosql import to_sql
 import config.db as db
@@ -47,6 +48,29 @@ def download_stock_basic_info():
     except Exception as e:
         print(str(e))
 
+# 获取所有股票的历史K线
+@fn_timer_
+def download_all_stock_history_k_line():
+    print('download all stock k-line start')
+
+    try:
+        engine = db.get_w_engine()
+        df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
+        codes = df[KEY_CODE].tolist()
+        print('total stocks:{0}'.format(len(codes)))
+        for code in codes:
+            download_stock_kline_by_code(code)
+
+        # codes = codes[::-1]
+        #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
+        # pool = ThreadPool(processes=10)
+        # pool.map(download_stock_kline_by_code, codes)
+        # pool.close()
+        # pool.join()
+
+    except Exception as e:
+        print(str(e))
+    print('download all stock k-line finish')
 
 def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime.now()):
     """
@@ -106,9 +130,9 @@ def download_stock_kline_by_code(code, date_start='', date_end=datetime.datetime
 
     except Exception as e:
         print(str(e))
-    
         
     # return None
+
 
 def download_kline_by_date_range(code, date_start, date_end):
     """
@@ -138,26 +162,28 @@ def download_kline_by_date_range(code, date_start, date_end):
     except Exception as e:
         print(str(e))
         return pd.DataFrame()
-        
-# 下载股票的历史分笔数据
-# code:股票代码
-# 默认为最近3年的分笔数据
-# def download_stock_quotes(code, date_start='', date_end=str(datetime.date.today())):
-#     code = util.getSixDigitalStockCode(code)
-#     try:
-#         if date_start == '':
-#             date = datetime.datetime.today().date() + datetime.timedelta(-365*3)
-#             date_start = str(date)
-#
-#         dateStart = datetime.datetime.strptime(str(date_start), "%Y-%m-%d")
-#
-#         for i in range(du.diff_day(date_start, date_end)):
-#             date = dateStart + datetime.timedelta(i)
-#             strDate = date.strftime("%Y-%m-%d")
-#             df = ts.get_tick_data(code, strDate)
-#             print df
-#     except Exception as e:
-#         print str(e)
+
+
+def download_realtime_stock_price():
+    """
+    # 下载股票的实时行情
+    :return:
+    """
+    try:
+        engine = db.get_w_engine()
+
+        df_price = ts.get_today_all()
+
+        stock_time = GetNowTime()
+        if stock_time[11:] > "15:00:00":
+            stock_time = stock_time[:11] + "15:00:00"
+        df_price['date'] = stock_time
+
+        # df_price.to_sql(STOCK_REALTIME_TABLE, engine, if_exists='append', index=False)
+        to_sql(STOCK_REALTIME_TABLE, engine, df_price, type='replace')
+
+    except Exception as e:
+        print(e)
 
 #######################
 ##  private methods  ##
@@ -178,29 +204,7 @@ def get_stock_info(code):
         print(e)
     return se
 
-# 获取所有股票的历史K线
-@fn_timer_
-def download_all_stock_history_k_line():
-    print('download all stock k-line start')
 
-    try:
-        engine = db.get_w_engine()
-        df = pd.read_sql_table(STOCK_BASIC_TABLE, engine)
-        codes = df[KEY_CODE].tolist()
-        print('total stocks:{0}'.format(len(codes)))
-        for code in codes:
-            download_stock_kline_by_code(code)
-        codes = codes[::-1]
-
-        #codes = r.lrange(INDEX_STOCK_BASIC, 0, -1)
-        pool = ThreadPool(processes=10)
-        pool.map(download_stock_kline_by_code, codes)
-        pool.close()
-        pool.join()
-
-    except Exception as e:
-        print(str(e))
-    print('download all stock k-line finish')
  
 
 # def check_unnormal_stock_price():
@@ -257,9 +261,9 @@ def download_all_stock_history_k_line():
 
 if __name__ == '__main__':
 
-    download_stock_basic_info()
-    download_all_stock_history_k_line()
-    # download_stock_kline_by_code('600000')
+    # download_stock_basic_info()
+    # download_all_stock_history_k_line()
+    download_realtime_stock_price()
 
     # check_unnormal_stock_price()
     #calcute_ma_all()
