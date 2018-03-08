@@ -2,17 +2,12 @@
 import tushare as ts
 import pandas as pd
 import datetime
-from multiprocessing.dummy import Pool as ThreadPool
-from tushare.util import dateu as du
-
-from util import stockutil as util
 
 from util.stockutil import fn_timer as fn_timer_
 from util.date_convert import GetNowTime
 
 from util.io_tosql import to_sql
-import config.db as db
-from config.settings import *
+import py3.config.db_config as db
 
 
 def download_stock_basic_info():
@@ -189,6 +184,7 @@ def download_realtime_stock_price():
 ##  private methods  ##
 #######################
 
+@fn_timer_
 def get_stock_info(code):
     """
     获取股票基本信息
@@ -263,7 +259,9 @@ if __name__ == '__main__':
 
     # download_stock_basic_info()
     # download_all_stock_history_k_line()
-    download_realtime_stock_price()
+    # download_realtime_stock_price()
+
+    get_stock_info("600000")
 
     # check_unnormal_stock_price()
     #calcute_ma_all()
