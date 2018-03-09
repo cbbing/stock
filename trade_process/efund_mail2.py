@@ -517,7 +517,10 @@ def main1():
         ibuysell1 = main_run(all_fund_list1[:80])
         print(str(ibuysell1))
         sendmsg = '股市有风险，投资需谨慎。模型难免有误，具体买卖需看下走势。1、根据MACD与MA均线模型获取近两三天内买卖信号如，[2018-01-29 00:, signal:, -1]，signal(1:买, -1:卖, 0:默认)，该模型有一定参考依据，但信号常反应较慢，需结合走势判断。    2、连续四五天涨跌与今日净值是否接近最大最小净值判断买卖信息，该模型在适合小涨小跌，大涨大跌时需谨慎。 \n'
-        # f = open("buysell.txt",'a')
+        sendmsg +='A股_百度搜索  https://www.baidu.com/s?tn=baidurt&rtt=1&bsst=1&wd=A%B9%C9&origin=ps'+ '\n'
+	sendmsg +='股票对比，上证50(000016),中小板指(399005),创业板指(399006),沪深300(399300),军工指数(399959)的走势比较、指标比较_网易股票  http://quotes.money.163.com/tools/stockcomp/0000016,1399005,1399006,1399300,1399959.html'+ '\n'
+	sendmsg +='行业板块资金流向排行 _ 数据中心 _ 东方财富网  http://data.eastmoney.com/bkzj/hy.html'+ '\n'
+	# f = open("buysell.txt",'a')
         for j in ibuysell1[1]:
             for m in j:
                 if len(m) > 0:
