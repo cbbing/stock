@@ -187,7 +187,7 @@ def get_histrydata(strfundcode,numdays):
         print 'date input error!\n'
 
     jingzhimin = get_jingzhi(strfundcode[0], strsdate, stredate)
-    if tdatetime.isoweekday() != 7 and tdatetime.isoweekday() != 6:
+    if not(tdatetime.isoweekday() == 7 or tdatetime.isoweekday() == 6):
         url = 'http://fund.eastmoney.com/%s.html' % strfundcode[0]
         todayvalue = spider(url)
         if todayvalue != None:
