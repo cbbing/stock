@@ -435,19 +435,19 @@ def send_email(text):
                 smtp.login(username, password)
                 for jj in receiver:
                     smtp.sendmail(sender, jj, msg.as_string())
-                    time.sleep(35)
+                    time.sleep(6)
                 smtp.quit()
                 print(u"邮件发送成功")
             except smtplib.SMTPException, e1:
                 print(u"Error: 无法发送邮件:"+str(e1))
                 smtp.quit()
                 try:
-                    username = '15623863340@sina.cn'  # input("请输入账号:")
+                    username = '15623863340@sina.com'  # input("请输入账号:")
                     password = '133499'  # input("请输入密码:")
                     sender = username
                     # sender=''
                     # receiver = [ '1627041882@qq.com','994992333@qq.com','1847725033@qq.com']  # 'xxxxxxxxxx@qq.com','xxxxxxxxxx@126.com','994992333@qq.com','1847725033@qq.com'
-                    msg['From'] = formataddr(['15623863340@sina.cn', sender])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
+                    msg['From'] = formataddr(['15623863340@sina.com', sender])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
                     msg['To'] = ",".join(receiver)  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
                     smtpserver = 'smtp.sina.cn'
                     smtp = smtplib.SMTP(smtpserver,25)
