@@ -323,7 +323,7 @@ def main_run(all_fund_list):
     buysell = []
     buysell1 = []
     for i in code:
-        jingzhimin = get_histrydata(i, 365*2)
+        jingzhimin = get_histrydata(i, 365*1)
         buysell1.append(macdmain(i,jingzhimin))
         # save(strfundcode=i ,numdays=365*1)
         sb=fenxi(strfundcode=i, jingzhimin=jingzhimin, method ='general')
@@ -331,7 +331,7 @@ def main_run(all_fund_list):
             buysell.append([i,sb,'code'])
     for i in all_fund_list:
         # save(strfundcode=i ,numdays=365*1)
-        jingzhimin1 = get_histrydata(i, 365*2)
+        jingzhimin1 = get_histrydata(i, 365*1)
         buysell1.append(macdmain(i,jingzhimin1))
         sb=fenxi(strfundcode=i, jingzhimin=jingzhimin1, method='top')
         if sb:
