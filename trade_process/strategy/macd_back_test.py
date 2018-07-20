@@ -665,7 +665,7 @@ def macdmain(stockName,fundlist):
     # fundlist = efund_mail2.get_histrydata(stockName, 180)
     stock_data = pd.DataFrame(fundlist[:200][::-1], columns=['Date', 'Adj Close', 'countclose', 'change'])
     # self_adaptive_ma(stock_data)
-    period_type = 'M'
+    period_type = 'w'
     stock_data = stock_data.resample(period_type,how='last')
     #stock_data = 
 
