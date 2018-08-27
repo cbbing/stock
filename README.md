@@ -1,3 +1,4 @@
+[![Build Status](https://www.travis-ci.org/lishulincug/stock-2.svg?branch=master)](https://www.travis-ci.org/lishulincug/stock-2)
 - 实时交易
 - 历史回撤
 -均线策略
