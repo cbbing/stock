@@ -1,29 +1,25 @@
-#!/usr/local/bin/python
-#coding=utf-8
 
-#实时均线策略
 
 import pandas as pd
 import numpy as np
-from data_process.data_calcute import calcute_ma
 
 from init import *
 from util.date_convert import GetNowDate
-from copy import deepcopy
-
 
 class MAStrategy:
-    
-    # df: DataFrame    
-    def __init__(self, code, trade, df_close):
+    """
+    实时均线策略
+    """
+
+    def __init__(self, trade, df_close, avr_short, avr_long):
         """
         :param code:  股票代码
         :param trade:  实时股价, float
         :param df_close: 收盘价序列,已排序, columns=['date', 'close']
         """
         
-        self.AVR_SHORT = AVR_SHORT
-        self.AVR_LONG = AVR_LONG
+        self.AVR_SHORT = avr_short
+        self.AVR_LONG = avr_long
         self.MA_DEA = 10
 
         self.COL_MA_S = 'ma_{}'.format(self.AVR_SHORT)
@@ -31,15 +27,10 @@ class MAStrategy:
         self.COL_EMA_S = 'ema_{}'.format(self.AVR_SHORT)
         self.COL_EMA_L = 'ema_{}'.format(self.AVR_LONG)
 
-
-        #方式二
-        # 将数据按照交易日期从远到近排序
-        # df.sort(columns='date', inplace=True)
-
-        df_close = calcute_ma(df_close, AVR_SHORT, AVR_LONG)
+        df_close = self.calcute_ma(df_close, AVR_SHORT, AVR_LONG)
 
         if trade: #有实时股价
-            df_now = deepcopy(df_close.tail(1))
+            df_now = df_close.tail(1).copy()
             df_now['date'] = GetNowDate()
             df_now['close'] = trade
             df_close = pd.concat([df_close, df_now], ignore_index=True)
@@ -66,10 +57,14 @@ class MAStrategy:
         # print self.df_close.head()
         # print self.df_close.tail()
           
-            
 
-    # 组合择时指标 (实时）
     def select_Time_Mix(self, conditionBuy = 2, conditonSale = 2):
+        """
+        组合择时指标 (实时）
+        :param conditionBuy: 满足2个即买入
+        :param conditonSale: 满足2个即卖出
+        :return:
+        """
         
         # 综合策略
         signalMA = self.select_Time_MA()
@@ -250,3 +245,22 @@ class MAStrategy:
         constaint = sSC*sSC
         return constaint
 
+    def calcute_ma(self, df, avr_short=12, avr_long=40):
+        """
+        计算ma, ema
+        :param df:
+        :return:
+        """
+        if len(df) == 0:
+            return
+
+        # print "{} calcute ma".format(df.ix[0,'code'])
+        df['ma_' + str(avr_short)] = pd.rolling_mean(df['close'], avr_short)  # 12
+        df['ma_' + str(avr_long)] = pd.rolling_mean(df['close'], avr_long)  # 40
+
+        # print "{} calcute ema".format(df.ix[0, 'code'])
+        df['ema_' + str(avr_short)] = pd.ewma(df['close'], span=avr_short)  # 12
+        df['ema_' + str(avr_long)] = pd.ewma(df['close'], span=avr_long)  # 40
+
+        df = df.replace(np.nan, 0)
+        return df

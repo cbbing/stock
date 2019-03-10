@@ -1,4 +1,4 @@
-from config.settings import DATABASES
+from py3.config import DATABASES
 from sqlalchemy import create_engine
 
 def get_w_engine():

@@ -8,7 +8,7 @@ import pandas as pd
 import copy
 from operator import itemgetter
 
-from init import engine, engine_test
+from py3.config.db_config import get_r_engine
 from util.date_convert import GetNowDate
 from data_process.online_data import get_real_price_dataframe
 
@@ -66,8 +66,6 @@ def stop_loss_by_price():
 
 
 
-
-
 class SymbolAccount():
     """
     股票账户类
@@ -80,13 +78,15 @@ class SymbolAccount():
         self.order_history = {} #dict, {symbol:000001, [(order_time:2016-07-11, , order_amount:100, order_price)]} , order_amount为正时买入,为负时卖出
         self.position_history = [] # 持仓历史[2016-07-11, cash, {'600000':100, '600031':300}]
 
+        self.engine = get_r_engine()
+
     def init_position_from_db(self):
         """
         从数据库初始化持仓情况
         :return:
         """
-        sql = "SELECT * FROM classifier_db.trade_order order by trade_time asc"
-        df = pd.read_sql(sql, engine_test)
+        sql = "SELECT * FROM security_transaction order by trading_date asc"
+        df = pd.read_sql(sql, self.engine)
         #剩余现金
         if len(df):
             self.cash = df['cash'].get_values()[-1]
@@ -177,7 +177,7 @@ class SymbolAccount():
             if close_hfq == -1:
                 msg = "{},{},get code close_price error!".format(symbol, current_date)
                 # raise Exception(msg)
-                print msg
+                print(msg)
                 return 0
 
             smybol_market_values += close_hfq * self.avail_secpos[symbol]
@@ -216,8 +216,8 @@ class SymbolAccount():
             smybol_orders = [[smybol] +one for one in smybol_orders]
             orders.extend(smybol_orders)
         orders = sorted(orders, key =lambda x : x[1])
-        print orders[:3]
-        print orders[-3:]
+        print(orders[:3])
+        print(orders[-3:])
         return orders
 
     def calcute_maximun_drawdown(self):
@@ -311,6 +311,7 @@ def get_close_price(symbol, trade_date):
     -------
 
     """
+    engine = get_r_engine()
     if len(symbol) == 6:
         sql = "SELECT close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' order by date asc".format(symbol, trade_date)
     else:
@@ -334,7 +335,7 @@ def get_close_prices(symbol, trade_date_begin, trade_date_end):
     :param trade_date_end:
     :return:
     """
-
+    engine = get_r_engine()
     if len(symbol) == 6:
         sql = "SELECT date, close FROM hq_db.stock_kline_fq where code='{}' and date>='{}' and date <='{}' order by date asc".format(
                 symbol, trade_date_begin, trade_date_end)

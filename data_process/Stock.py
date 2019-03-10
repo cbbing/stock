@@ -3,7 +3,7 @@
 
 from datetime import date
 
-from util.codeConvert import *
+from util.date_convert import *
 from init import *
 
 stockNameList = [('600000', '浦发银行'), \

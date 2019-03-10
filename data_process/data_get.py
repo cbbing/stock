@@ -5,8 +5,7 @@ import pandas as pd
 import tushare as ts
 
 from init import *
-from config.settings import *
-from util.codeConvert import *
+from util.date_convert import *
 from util.helper import fn_timer
 import wrapcache
 

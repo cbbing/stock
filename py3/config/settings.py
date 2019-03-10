@@ -54,4 +54,5 @@ DATABASES = {
 
 STOCK_BASIC_TABLE = 'stock_basic_info' # 索引：获取所有股票
 STOCK_KLINE_TABLE = 'stock_kline' # 索引：获取单只股票的所有日期的K线(前复权,后复权) #stock_kline_all
+STOCK_REALTIME_TABLE = 'stock_realtime' # 索引：获取单只股票的所有日期的K线(前复权,后复权) #stock_kline_all
 
