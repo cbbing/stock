@@ -1,7 +1,14 @@
 
-# 说明
-- 实时交易
-- 历史回撤
+
+# 趋势策略交易系统
+[![Build Status](https://www.travis-ci.org/evenyao/GearCase.svg?branch=master)](https://www.travis-ci.org/evenyao/GearCase)
+![Cocoapods](https://img.shields.io/cocoapods/l/AFNetworking.svg)
+
+
+
+- 实时行情获取
+- 实时交易提醒
+- 历史回撤查看
 
 [2018-02-25]
 # 行情下载
