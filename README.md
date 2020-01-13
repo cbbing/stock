@@ -1,10 +1,6 @@
 
 
 # 趋势策略交易系统
-[![Build Status](https://www.travis-ci.org/evenyao/GearCase.svg?branch=master)](https://www.travis-ci.org/evenyao/GearCase)
-![Cocoapods](https://img.shields.io/cocoapods/l/AFNetworking.svg)
-
-
 
 - 实时行情获取
 - 实时交易提醒
@@ -106,6 +102,9 @@ st->op1->op2->op3->op4->op5->op6->op7->op8->e
 + 如果滤波后的均线比前一个低点的向上漂移项低，则平仓或空仓；
 
 + 如果滤波后的均线比前一个低点的向下漂移项低，则空头开仓或持有空头。
+
+# License
+Apache Licensed. See accompanying LICENSE file.
 
 
 
