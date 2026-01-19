@@ -138,14 +138,6 @@ sequenceDiagram
     participant DB as MySQL (pms_monitor)
     participant API as REST API
 
-    %% 实时行情数据流
-    Note over Client,DB: 实时行情推送流程
-    Client->>WS: 连接 /ws/stock/
-    WS->>Cache: 加入 stock_realtime 组
-    DB-->>Cache: 行情数据更新
-    Cache-->>WS: 广播数据
-    WS-->>Client: 推送行情数据
-
     %% 持仓数据流
     Note over Client,DB: 实时持仓推送流程
     Client->>WS: 连接 /ws/pos/
