@@ -119,13 +119,13 @@ graph TB
 
     MARKET --> MYSQL_MONITOR
 
-    STYLE WEB fill:#e1f5ff
-    STYLE DJANGO fill:#ffeb99
-    STYLE CHANNELS fill:#99ccff
-    STYLE REDIS fill:#ff9999
-    STYLE MYSQL_STRATEGY fill:#99ff99
-    STYLE MYSQL_MONITOR fill:#99ff99
-    STYLE LDAP fill:#cc99ff
+    style WEB fill:#e1f5ff
+    style DJANGO fill:#ffeb99
+    style CHANNELS fill:#99ccff
+    style REDIS fill:#ff9999
+    style MYSQL_STRATEGY fill:#99ff99
+    style MYSQL_MONITOR fill:#99ff99
+    style LDAP fill:#cc99ff
 ```
 
 ## 数据流图
